@@ -1,5 +1,7 @@
-var path = require('path')
-var webpack = require('webpack')
+'use strict';
+
+const path = require('path');
+const webpack = require('webpack');
 
 module.exports = {
   entry: './src/main.js',
@@ -13,31 +15,13 @@ module.exports = {
   },
   module: {
     loaders: [
-      {
-        test: /\.vue$/,
-        loader: 'vue'
-      },
-      {
-        test: /\.js$/,
-        loader: 'babel',
-        exclude: /node_modules/
-      },
-      {
-        test: /\.json$/,
-        loader: 'json'
-      },
-      {
-        test: /\.html$/,
-        loader: 'vue-html'
-      },
-      {
-        test: /\.(png|jpg|gif|svg)$/,
-        loader: 'url',
-        query: {
-          limit: 10000,
-          name: '[name].[ext]?[hash]'
-        }
-      }
+      {test: /\.vue$/, loader: 'vue' },
+      {test: /\.js$/,  loader: 'babel', exclude: /node_modules/},
+      {test: /\.json$/, loader: 'json'},
+      {test: /\.(png|jpg|gif|svg)$/, loader: 'url', query: {
+        limit: 10000,
+        name: '[name].[ext]?[hash]'
+      }}
     ]
   },
   devServer: {
@@ -48,8 +32,7 @@ module.exports = {
 }
 
 if (process.env.NODE_ENV === 'production') {
-  module.exports.devtool = 'source-map'
-  // http://vuejs.github.io/vue-loader/workflow/production.html
+  module.exports.devtool = 'source-map';
   module.exports.plugins = (module.exports.plugins || []).concat([
     new webpack.DefinePlugin({
       'process.env': {
@@ -62,5 +45,5 @@ if (process.env.NODE_ENV === 'production') {
       }
     }),
     new webpack.optimize.OccurenceOrderPlugin()
-  ])
-}
+  ]);
+};
