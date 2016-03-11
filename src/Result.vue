@@ -44,7 +44,7 @@ export default {
       scene.add(points);
 
       renderer = new THREE.WebGLRenderer({antialias: true});
-      renderer.setSize(this.$el.offsetWidth, this.$el.offsetWidth);
+      renderer.setSize(this.$el.offsetWidth, this.$el.offsetWidth * 0.8);
       renderer.setClearColor('#222', 1);
 
       this.$el.appendChild(renderer.domElement);

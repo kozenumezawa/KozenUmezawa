@@ -1,14 +1,19 @@
 <template lang="jade">
+.title Opacity
 canvas#opacity
 </template>
 
 <script>
 export default {
+  computed: {
+    canvas () {
+      return document.querySelector('#opacity');
+    }
+  },
   ready () {
-    const canvas = this.$el;
-    const context = canvas.getContext('2d');
-    context.rect(0, 0, canvas.width, canvas.height);
-    const grd = context.createLinearGradient(0, canvas.height/2, canvas.width, canvas.height/2);
+    const context = this.canvas.getContext('2d');
+    context.rect(0, 0, this.canvas.width, this.canvas.height);
+    const grd = context.createLinearGradient(0, this.canvas.height/2, this.canvas.width, this.canvas.height/2);
     grd.addColorStop(0, '#ffffff');
     grd.addColorStop(1, '#000000');
     context.fillStyle = grd;

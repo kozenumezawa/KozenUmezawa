@@ -5,11 +5,7 @@
       .title Result
       result
     .column
-      .title Color palette
-      color-palette
-      .title Color
       color
-      .title Opacity
       opacity
       buttons
 </template>
@@ -18,14 +14,12 @@
 import Result       from './Result.vue';
 import Buttons      from './Buttons.vue';
 
-import ColorPalette from './configuration/ColorPalette.vue';
 import Color        from './configuration/Color.vue';
 import Opacity      from './configuration/Opacity.vue';
 
 export default {
   components: {
     Result,
-    ColorPalette,
     Color,
     Opacity,
     Buttons
