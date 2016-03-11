@@ -1,25 +1,53 @@
-<template>
-  <div id="app">
-    <h1>{{ msg }}</h1>
-  </div>
+<template lang="jade">
+.container
+  .row
+    .column.column-60
+      .title Result
+      result
+    .column
+      .title Color palette
+      color-palette
+      .title Color
+      color
+      .title Opacity
+      opacity
+      buttons
 </template>
 
 <script>
+import Result       from './Result.vue';
+import Buttons      from './Buttons.vue';
+
+import ColorPalette from './configuration/ColorPalette.vue';
+import Color        from './configuration/Color.vue';
+import Opacity      from './configuration/Opacity.vue';
+
 export default {
+  components: {
+    Result,
+    ColorPalette,
+    Color,
+    Opacity,
+    Buttons
+  },
   data () {
     return {
-      // note: changing this line won't causes changes
-      // with hot-reload because the reloaded component
-      // preserves its current state and we are modifying
-      // its initial state.
-      msg: 'Hello Vue!'
     }
   }
-}
+};
 </script>
 
 <style>
 body {
-  font-family: Helvetica, sans-serif;
+  background: whitesmoke;
+  user-select: none;
+}
+.container {
+  margin: 20px auto;
+  padding: 0;
+  width: 1140px;
+}
+.title:not(:first-child) {
+  margin-top: 20px;
 }
 </style>
