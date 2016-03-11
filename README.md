@@ -12,3 +12,8 @@ npm run dev
 # build for production with minification
 npm run build
 ```
+
+## Dependencies
+Three.js and its plugins are served from `src/vendor` directory.
+- Three.js (r74)
+- GPUParticleSystem.js by [Charlie Hoey](http://charliehoey.com)
