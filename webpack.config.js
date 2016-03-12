@@ -47,7 +47,7 @@ if (process.env.NODE_ENV === 'production') {
     }),
     new webpack.optimize.OccurenceOrderPlugin(),
     new CopyWebpackPlugin([
-      {from: './vendor', to: './vendor'}
+      {from: './assets', to: './assets'}
     ])
   ]);
 };
