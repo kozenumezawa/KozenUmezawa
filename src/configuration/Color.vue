@@ -8,7 +8,7 @@
     .rgb= "{{{ rgb }}}"
 
 .title Color
-canvas#color(width="400" height="40")
+canvas#color(@mousemove="updateColor" @mousedown="updateColor" width="430" height="40")
 </template>
 
 <script>
@@ -18,17 +18,13 @@ import tinycolor from 'tinycolor2';
 export default {
   data () {
     return {
-      colorData: null,
-      currentColor: '#ffffff'
+      colorsData: [],
+      currentColor: '#ff0000'
     }
   },
   computed: {
-    palette () {
-      return document.querySelector('#palette');
-    },
-    color () {
-      return document.querySelector('#color');
-    },
+    palette: () => document.querySelector('#palette'),
+    color: () => document.querySelector('#color'),
     rgb () {
       const rgb = tinycolor(this.currentColor).toRgb();
       return `R: ${rgb['r']}<br>G: ${rgb['g']}<br>B: ${rgb['b']}`;
@@ -37,9 +33,16 @@ export default {
   ready () {
     this.initPalette();
     this.initColor();
+
+    this.$on('reset', () => {
+      console.log('reset');
+      this.initPalette();
+      this.initColor();
+    });
   },
   methods: {
     initPalette () {
+      this.currentColor = '#ff0000';
       const context = this.palette.getContext('2d');
       const img = new Image();
       img.src = './assets/img/palette.png';
@@ -52,21 +55,28 @@ export default {
       const context = this.color.getContext('2d');
       context.rect(0, 0, this.color.width, this.color.height);
       const grd = context.createLinearGradient(0, this.color.height/2, this.color.width, this.color.height/2);
-      grd.addColorStop(0.00, '#0000ff');
-      grd.addColorStop(0.25, '#00ffff');
-      grd.addColorStop(0.50, '#00ff00');
-      grd.addColorStop(0.75, '#ffff00');
-      grd.addColorStop(1.00, '#ff0000');
+      _.forEach(['#0000ff', '#00ffff', '#00ff00', '#ffff00', '#ff0000'], (el, idx) => grd.addColorStop(0.25 * idx, el));
       context.fillStyle = grd;
       context.fill();
     },
-    pickColor: function(e){
+    pickColor (e) {
       if(e.buttons === 0) return;
       const idx = Math.round(e.layerY * 350 + e.layerX) * 4;
       const hexR = `00${this.colorsData[idx+0].toString(16)}`.substr(-2),
             hexG = `00${this.colorsData[idx+1].toString(16)}`.substr(-2),
             hexB = `00${this.colorsData[idx+2].toString(16)}`.substr(-2);
       this.currentColor = '#' + hexR + hexG + hexB;
+    },
+    updateColor (e) {
+      if(e.buttons === 0) return;
+      const context = this.color.getContext('2d');
+      context.lineWidth = 5;
+      context.strokeStyle = tinycolor(this.currentColor).setAlpha(0.7);
+      context.beginPath();
+      context.moveTo(e.layerX, 0)
+      context.lineTo(e.layerX, 40);
+      context.stroke();
+      context.closePath();
     }
   }
 };
@@ -75,12 +85,6 @@ export default {
 <style scoped>
 #palette {
   cursor: crosshair;
-}
-#color {
-  width: 100%
-}
-.current-color {
-  width: 60px;
 }
 .rgb {
   font-family: monospace;

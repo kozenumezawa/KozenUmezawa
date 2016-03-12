@@ -24,8 +24,9 @@ export default {
     Opacity,
     Buttons
   },
-  data () {
-    return {
+  methods: {
+    reset () {
+      this.$broadcast('reset');
     }
   }
 };

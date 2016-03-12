@@ -1,7 +1,7 @@
 <template lang="jade">
 ._buttons
   .row
-    .column.column-50: a.button Reset
+    .column.column-50: a.button(@click="reset") Reset
     .column.column-25: a.button Undo
     .column.column-25: a.button Redo
   .row
@@ -10,6 +10,13 @@
 </template>
 
 <script>
+export default {
+  methods: {
+    reset () {
+      this.$parent.reset();
+    }
+  }
+}
 </script>
 
 <style scoped>
