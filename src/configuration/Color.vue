@@ -35,7 +35,6 @@ export default {
     this.initColor();
 
     this.$on('reset', () => {
-      console.log('reset');
       this.initPalette();
       this.initColor();
     });
