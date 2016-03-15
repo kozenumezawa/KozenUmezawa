@@ -1,7 +1,7 @@
 {
   "name": "pbr",
   "description": "A particle based renderer",
-  "author": "Takao NAITO <xarsh@outlook.com>",
+  "author": "Takao NAITO <naito@sorapixels.com>",
   "private": true,
   "scripts": {
     "dev": "webpack-dev-server --inline --hot --port 3000",

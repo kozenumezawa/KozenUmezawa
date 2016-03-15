@@ -15,6 +15,7 @@ npm run build
 
 ## Dependencies
 Three.js and its plugins are served from `src/vendor` directory.
+
 - Three.js (r74)
 - OrbitControls.js
 
