@@ -16,4 +16,10 @@ npm run build
 ## Dependencies
 Three.js and its plugins are served from `src/vendor` directory.
 - Three.js (r74)
-- GPUParticleSystem.js by [Charlie Hoey](http://charliehoey.com)
+- OrbitControls.js
+
+## Test data
+For easy development and check the rendering result, there should be test point files in
+`assets/kvsml`.
+Currently this program uses only `test_coord.dat` and `test_value.dat` since the usage of
+`test_normal.dat` is unsure.
