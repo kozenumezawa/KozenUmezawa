@@ -24,9 +24,15 @@ export default {
     Opacity,
     Buttons
   },
+  data () {
+    return {
+      spectrum: [],
+      opacity: []
+    }
+  },
   methods: {
-    reset () {
-      this.$broadcast('reset');
+    emit (name) {
+      this.$broadcast(name);
     }
   }
 };
