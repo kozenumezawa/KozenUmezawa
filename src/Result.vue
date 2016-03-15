@@ -4,10 +4,9 @@
 
 <script>
 import _ from 'lodash';
+import request from 'axios';
 
-var camera, scene, renderer, particles, particleCount, points;
-const xSpeed = 0.0005;
-const ySpeed = 0.001;
+let camera, scene, renderer, controls;
 
 export default {
   ready () {
@@ -17,61 +16,54 @@ export default {
   methods: {
     init () {
       scene = new THREE.Scene();
-      scene.fog = new THREE.FogExp2('#222', 0.001);
 
-      camera = new THREE.PerspectiveCamera(75, 1, 1, 1000);
-      camera.position.z = 500;
-
-      const material = new THREE.PointsMaterial({
-        color: 0xffffff,
-        size: 3
-      });
-
-      particleCount = 15000;
-      particles = new THREE.Geometry();
-
-      _.times(particleCount, i => {
-        const px = Math.random() * 2000 - 1000;
-        const py = Math.random() * 2000 - 1000;
-        const pz = Math.random() * 2000 - 1000;
-        const particle = new THREE.Vector3(px, py, pz);
-        particle.velocity = new THREE.Vector3(0, Math.random(), 0);
-        particles.vertices.push(particle);
-      });
-
-      points = new THREE.Points(particles, material);
-      points.sortParticles = true;
-      scene.add(points);
+      camera = new THREE.PerspectiveCamera(80, 1/0.8, 1, 1000);
+      camera.position.z = 50;
 
       renderer = new THREE.WebGLRenderer({antialias: true});
+      renderer.setPixelRatio(window.devicePixelRatio);
       renderer.setSize(this.$el.offsetWidth, this.$el.offsetWidth * 0.8);
-      renderer.setClearColor('#222', 1);
+
+      controls = new THREE.OrbitControls(camera, renderer.domElement);
+
+      this.retrieveSampleKvsml();
 
       this.$el.appendChild(renderer.domElement);
     },
     animate () {
       requestAnimationFrame(this.animate);
-
-      scene.rotation.y += xSpeed;
-
-      _.times(particleCount, i => {
-        const particle = particles.vertices[i];
-
-        if(particle.y > 1000){
-          particle.y = -1000;
-          particle.velocity.y = Math.random();
-        }
-        particle.velocity.y += Math.random() * ySpeed;
-        particle.add(particle.velocity);
-      })
-
-      points.geometry.verticesNeedUpdate = true;
-
+      controls.update();
       this.render();
     },
     render () {
-      camera.lookAt(scene.position);
       renderer.render(scene, camera);
+    },
+    retrieveSampleKvsml () {
+      const particles = new THREE.Geometry();
+      const material = new THREE.PointsMaterial({
+        size: 0.05,
+        transparent: true,
+        vertexColors: THREE.VertexColors
+      });
+
+      // This block should be replaced with OPeNDAP request.
+      request.get('./assets/kvsml/test_coord.dat',  {responseType: 'arraybuffer'})
+      .then(res => {
+        const coord = new Float32Array(res.data);
+        _.times(coord.length/3, i => {
+          return particles.vertices.push(new THREE.Vector3(coord[i*3], coord[i*3+1], coord[i*3+2]));
+        });
+      })
+      .then(() => request.get('./assets/kvsml/test_value.dat', {responseType: 'arraybuffer'}))
+      .then(res => {
+        const value = new Float32Array(res.data);
+        const max = _.max(value);
+        particles.colors = _.map(value, v => {
+          return (new THREE.Color()).setHSL(v / max, 1.0, 0.5);
+        });
+      })
+      .then(() => scene.add(new THREE.Points(particles, material)))
+      .catch(console.error);
     }
   }
 }
@@ -79,6 +71,5 @@ export default {
 
 <style scoped>
 #result {
-  overflow: hidden;
 }
 </style>
