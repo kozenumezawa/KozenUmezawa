@@ -7,8 +7,8 @@
     .block(v-bind:style="{background: currentColor}")
     .rgb= "{{{ rgb }}}"
 
-.title Color
-canvas#color(@mousemove="updateColor" @mousedown="updateColor" width="430" height="40")
+.title Spectrum
+canvas#spectrum(@mousemove="updateSpectrum" @mousedown="updateSpectrum" width="430" height="1")
 </template>
 
 <script>
@@ -24,7 +24,7 @@ export default {
   },
   computed: {
     palette: () => document.querySelector('#palette'),
-    color: () => document.querySelector('#color'),
+    spectrum: () => document.querySelector('#spectrum'),
     rgb () {
       const rgb = tinycolor(this.currentColor).toRgb();
       return `R: ${rgb['r']}<br>G: ${rgb['g']}<br>B: ${rgb['b']}`;
@@ -32,50 +32,47 @@ export default {
   },
   ready () {
     this.initPalette();
-    this.initColor();
+    this.initSpectrum();
 
     this.$on('reset', () => {
       this.initPalette();
-      this.initColor();
+      this.initSpectrum();
     });
   },
   methods: {
     initPalette () {
       this.currentColor = '#ff0000';
-      const context = this.palette.getContext('2d');
+      const ctx = this.palette.getContext('2d');
       const img = new Image();
       img.src = './assets/img/palette.png';
       img.onload = () => {
-        context.drawImage(img, 0, 0);
-        this.colorsData = context.getImageData(0, 0, this.palette.width, this.palette.height).data;
+        ctx.drawImage(img, 0, 0);
+        this.colorsData = ctx.getImageData(0, 0, this.palette.width, this.palette.height).data;
       }
     },
-    initColor () {
-      const context = this.color.getContext('2d');
-      context.rect(0, 0, this.color.width, this.color.height);
-      const grd = context.createLinearGradient(0, this.color.height/2, this.color.width, this.color.height/2);
+    initSpectrum () {
+      const ctx = this.spectrum.getContext('2d');
+      ctx.rect(0, 0, this.spectrum.width, this.spectrum.height);
+      const grd = ctx.createLinearGradient(0, this.spectrum.height/2, this.spectrum.width, this.spectrum.height/2);
       _.forEach(['#0000ff', '#00ffff', '#00ff00', '#ffff00', '#ff0000'], (el, idx) => grd.addColorStop(0.25 * idx, el));
-      context.fillStyle = grd;
-      context.fill();
+      ctx.fillStyle = grd;
+      ctx.fill();
     },
     pickColor (e) {
       if(e.buttons === 0) return;
       const idx = Math.round(e.layerY * 350 + e.layerX) * 4;
-      const hexR = `00${this.colorsData[idx+0].toString(16)}`.substr(-2),
-            hexG = `00${this.colorsData[idx+1].toString(16)}`.substr(-2),
-            hexB = `00${this.colorsData[idx+2].toString(16)}`.substr(-2);
-      this.currentColor = '#' + hexR + hexG + hexB;
+      this.currentColor = `rgb(${this.colorsData[idx]},${this.colorsData[idx+1]},${this.colorsData[idx+2]})`;
     },
-    updateColor (e) {
+    updateSpectrum (e) {
       if(e.buttons === 0) return;
-      const context = this.color.getContext('2d');
-      context.lineWidth = 5;
-      context.strokeStyle = tinycolor(this.currentColor).setAlpha(0.7);
-      context.beginPath();
-      context.moveTo(e.layerX, 0)
-      context.lineTo(e.layerX, 40);
-      context.stroke();
-      context.closePath();
+      const ctx = this.spectrum.getContext('2d');
+      ctx.lineWidth = 5;
+      ctx.strokeStyle = tinycolor(this.currentColor).setAlpha(0.7);
+      ctx.beginPath();
+      ctx.moveTo(e.layerX, 0)
+      ctx.lineTo(e.layerX, 1);
+      ctx.stroke();
+      ctx.closePath();
     }
   }
 };
@@ -84,6 +81,10 @@ export default {
 <style scoped>
 #palette {
   cursor: crosshair;
+}
+#spectrum {
+  height: 40px;
+  width: 430px;
 }
 .rgb {
   font-family: monospace;

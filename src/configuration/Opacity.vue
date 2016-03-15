@@ -17,25 +17,25 @@ export default {
   },
   methods: {
     init () {
-      const context = this.opacity.getContext('2d');
-      context.clearRect(0, 0, this.opacity.width, this.opacity.height);
-      context.rect(0, 0, this.opacity.width, this.opacity.height);
-      const grd = context.createLinearGradient(0, this.opacity.height/2, this.opacity.width, this.opacity.height/2);
+      const ctx = this.opacity.getContext('2d');
+      ctx.clearRect(0, 0, this.opacity.width, this.opacity.height);
+      ctx.rect(0, 0, this.opacity.width, this.opacity.height);
+      const grd = ctx.createLinearGradient(0, this.opacity.height/2, this.opacity.width, this.opacity.height/2);
       grd.addColorStop(0, 'rgba(255,255,255,0)');
       grd.addColorStop(1, 'rgba(0, 0, 0, 1)');
-      context.fillStyle = grd;
-      context.fill();
+      ctx.fillStyle = grd;
+      ctx.fill();
     },
     updateOpacity (e) {
       if(e.buttons === 0) return;
-      const context = this.opacity.getContext('2d');
-      context.lineWidth = 5;
-      context.strokeStyle = 'rgba(0, 0, 0, 0.7)'
-      context.beginPath();
-      context.moveTo(e.layerX, 0)
-      context.lineTo(e.layerX, 60);
-      context.stroke();
-      context.closePath();
+      const ctx = this.opacity.getContext('2d');
+      ctx.lineWidth = 5;
+      ctx.strokeStyle = 'rgba(0, 0, 0, 0.7)'
+      ctx.beginPath();
+      ctx.moveTo(e.layerX, 0)
+      ctx.lineTo(e.layerX, 60);
+      ctx.stroke();
+      ctx.closePath();
     }
   }
 };
