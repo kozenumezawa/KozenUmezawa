@@ -6,6 +6,8 @@
 import _ from 'lodash';
 import request from 'axios';
 
+import shader from './shader';
+
 let camera, scene, renderer, controls;
 
 export default {
@@ -15,10 +17,12 @@ export default {
   },
   methods: {
     init () {
+      THREE.ShaderLib['points'].fragmentShader = shader.fragmentShader;
+
       scene = new THREE.Scene();
 
       camera = new THREE.PerspectiveCamera(80, 1/0.8, 1, 1000);
-      camera.position.z = 50;
+      camera.position.z = 40;
 
       renderer = new THREE.WebGLRenderer({antialias: true});
       renderer.setPixelRatio(window.devicePixelRatio);
@@ -41,7 +45,7 @@ export default {
     retrieveSampleKvsml () {
       const particles = new THREE.Geometry();
       const material = new THREE.PointsMaterial({
-        size: 0.05,
+        size: 0.06,
         transparent: true,
         vertexColors: THREE.VertexColors
       });
@@ -58,8 +62,9 @@ export default {
       .then(res => {
         const value = new Float32Array(res.data);
         const max = _.max(value);
+        const min = _.min(value);
         particles.colors = _.map(value, v => {
-          return (new THREE.Color()).setHSL(v / max, 1.0, 0.5);
+          return (new THREE.Color()).setHSL((v-min) / max, 1.0, 0.5);
         });
       })
       .then(() => scene.add(new THREE.Points(particles, material)))
@@ -68,8 +73,3 @@ export default {
   }
 }
 </script>
-
-<style scoped>
-#result {
-}
-</style>

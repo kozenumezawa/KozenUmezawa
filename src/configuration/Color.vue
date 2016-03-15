@@ -18,7 +18,7 @@ import tinycolor from 'tinycolor2';
 export default {
   data () {
     return {
-      colorsData: [],
+      imgData: [],
       currentColor: '#ff0000'
     }
   },
@@ -47,7 +47,7 @@ export default {
       img.src = './assets/img/palette.png';
       img.onload = () => {
         ctx.drawImage(img, 0, 0);
-        this.colorsData = ctx.getImageData(0, 0, this.palette.width, this.palette.height).data;
+        this.imgData = ctx.getImageData(0, 0, this.palette.width, this.palette.height).data;
       }
     },
     initSpectrum () {
@@ -61,7 +61,7 @@ export default {
     pickColor (e) {
       if(e.buttons === 0) return;
       const idx = Math.round(e.layerY * 350 + e.layerX) * 4;
-      this.currentColor = `rgb(${this.colorsData[idx]},${this.colorsData[idx+1]},${this.colorsData[idx+2]})`;
+      this.currentColor = `rgb(${this.imgData[idx]},${this.imgData[idx+1]},${this.imgData[idx+2]})`;
     },
     updateSpectrum (e) {
       if(e.buttons === 0) return;
