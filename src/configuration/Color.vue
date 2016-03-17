@@ -4,8 +4,11 @@
   .column.column-80
     canvas#palette(@mousemove="pickColor" @mousedown="pickColor" width="350" height="128")
   .column.column-20
-    .block(v-bind:style="{background: currentColor}")
-    .rgb= "{{{ rgb }}}"
+    .block(v-bind:style="{background: blockColor}")
+    .rgb
+      span!= "R: {{ currentColor[0] }}<br>"
+      span!= "G: {{ currentColor[1] }}<br>"
+      span!= "B: {{ currentColor[2] }}"
 
 .title Spectrum
 canvas#spectrum(@mousemove="updateSpectrum" @mousedown="updateSpectrum" width="100" height="1")
@@ -13,22 +16,29 @@ canvas#spectrum(@mousemove="updateSpectrum" @mousedown="updateSpectrum" width="1
 
 <script>
 import _ from 'lodash';
-import tinycolor from 'tinycolor2';
+
+import helper from '../helper';
 
 let imgData = [];
 
 export default {
   data () {
     return {
-      currentColor: '#ff0000'
+      currentColor: new Uint8ClampedArray([255, 0, 0])
     }
   },
   computed: {
     palette: () => document.querySelector('#palette'),
     spectrum: () => document.querySelector('#spectrum'),
-    rgb () {
-      const rgb = tinycolor(this.currentColor).toRgb();
-      return `R: ${rgb['r']}<br>G: ${rgb['g']}<br>B: ${rgb['b']}`;
+    blockColor: function(){
+      return `rgba(${_.join(this.currentColor, ',')}, 1.0)`;
+    },
+    rgb: function(){
+      return _.join([
+        `R: ${this.currentColor[0]}`,
+        `G: ${this.currentColor[1]}`,
+        `B: ${this.currentColor[2]}`,
+      ], '<br>');
     }
   },
   ready () {
@@ -44,7 +54,7 @@ export default {
   },
   methods: {
     initPalette () {
-      this.currentColor = '#ff0000';
+      this.currentColor = new Uint8ClampedArray([255, 0, 0]);
       const ctx = this.palette.getContext('2d');
       const img = new Image();
       img.src = './assets/img/palette.png';
@@ -63,27 +73,26 @@ export default {
     },
     pickColor (e) {
       if(e.buttons === 0) return;
-      const i = Math.round(e.layerY * 350 + e.layerX) * 4;
-      this.currentColor = `rgb(${imgData[i]},${imgData[i+1]},${imgData[i+2]})`;
+      const clickedPoint = helper.getClickedPoint(e);
+      const i = Math.floor(clickedPoint.offsetY * 350 + clickedPoint.offsetX) * 4;
+      this.currentColor = imgData.slice(i, i + 3);
     },
     updateSpectrum (e) {
       if(e.buttons === 0) return;
       const ctx = this.spectrum.getContext('2d');
+      const clickedPoint = helper.getClickedPoint(e);
       ctx.lineWidth = 3;
-      ctx.strokeStyle = tinycolor(this.currentColor).setAlpha(0.7);
+      ctx.strokeStyle = `rgba(${_.join(this.currentColor, ',')}, 0.7)`;
       ctx.beginPath();
-      ctx.moveTo(e.layerX / 430 * 100, 0)
-      ctx.lineTo(e.layerX / 430 * 100, 1);
+      ctx.moveTo(clickedPoint.offsetX / ctx.canvas.clientWidth * 100, 0)
+      ctx.lineTo(clickedPoint.offsetX / ctx.canvas.clientWidth * 100, 1);
       ctx.stroke();
       ctx.closePath();
       this.applySpectrum();
     },
     applySpectrum () {
-      const ctx = this.spectrum.getContext('2d');
-      const dump = ctx.getImageData(0, 0, 100, 1).data;
-      _.times(100, i => {
-        this.$parent.spectrum[i] = tinycolor({r: dump[i*4], g: dump[i*4+1], b: dump[i*4+2]}).toRgbString();
-      });
+      const dump = this.spectrum.getContext('2d').getImageData(0, 0, 100, 1).data;
+      this.$parent.spectrum = _(dump).map(d => d/0xff).chunk(4).value();
     }
   }
 };
