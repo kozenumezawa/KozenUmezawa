@@ -6,28 +6,27 @@
       result
     .column
       color
-      opacity
+      radius
       buttons
 </template>
 
 <script>
-import Result       from './Result.vue';
-import Buttons      from './Buttons.vue';
-
-import Color        from './configuration/Color.vue';
-import Opacity      from './configuration/Opacity.vue';
+import Result  from './Result.vue';
+import Buttons from './Buttons.vue';
+import Color   from './configuration/Color.vue';
+import Radius  from './configuration/Radius.vue';
 
 export default {
   components: {
     Result,
     Color,
-    Opacity,
+    Radius,
     Buttons
   },
   data () {
     return {
       spectrum: [],
-      opacity: []
+      radius: []
     }
   },
   methods: {
