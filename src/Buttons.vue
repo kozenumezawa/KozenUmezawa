@@ -17,7 +17,7 @@ export default {
 
 <style scoped>
 ._buttons {
-  margin-top: 20px;
+  margin-top: 18px;
 }
 .button {
   background-color: #666;

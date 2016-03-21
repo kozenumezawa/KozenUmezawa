@@ -1,3 +1,5 @@
+import THREE from 'three';
+
 module.exports = {
   vertexShader: [
     "attribute float radius;",

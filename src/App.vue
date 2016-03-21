@@ -11,6 +11,9 @@
 </template>
 
 <script>
+import 'normalize-css';
+import 'milligram';
+
 import Result  from './Result.vue';
 import Buttons from './Buttons.vue';
 import Color   from './configuration/Color.vue';
@@ -48,6 +51,6 @@ body {
   width: 1140px;
 }
 .title:not(:first-child) {
-  margin-top: 20px;
+  margin-top: 18px;
 }
 </style>

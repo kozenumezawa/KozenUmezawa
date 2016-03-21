@@ -17,8 +17,8 @@ module.exports = {
   module: {
     loaders: [
       {test: /\.vue$/, loader: 'vue' },
+      {test: /\.css$/, loader: 'style!css' },
       {test: /\.js$/,  loader: 'babel', exclude: /node_modules/},
-      {test: /\.json$/, loader: 'json'},
       {test: /\.(png|jpg|gif|svg)$/, loader: 'url', query: {
         limit: 10000,
         name: '[name].[ext]?[hash]'

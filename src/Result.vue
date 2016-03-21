@@ -4,17 +4,16 @@
 
 <script>
 import _ from 'lodash';
+
+import THREE from 'three';
+const OrbitControls = require('three-orbit-controls')(THREE);
+
 import request from 'axios';
 request.defaults.responseType = 'arraybuffer';
 
 import shader from './shader';
 
-const kvsml = {
-  normal: null,
-  coord: null,
-  value: null
-}
-
+const kvsml = {normal: null, coord: null, value: null};
 let camera, scene, renderer, controls, geometry, material, points;
 
 export default {
@@ -60,7 +59,7 @@ export default {
 
       points = new THREE.Points(geometry, material);
 
-      controls = new THREE.OrbitControls(camera, renderer.domElement);
+      controls = new OrbitControls(camera, renderer.domElement);
 
       this.retrieveSampleKvsml();
 
