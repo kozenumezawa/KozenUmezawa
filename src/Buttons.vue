@@ -1,8 +1,9 @@
 <template lang="jade">
 ._buttons
   .row
-    .column.column-50: a.button(@click="emit('apply')") Apply
-    .column.column-50: a.button(@click="emit('reset')") Reset
+    .column.column-30
+    .column.column-40: a.button(@click="emit('reset')") Reset
+    .column.column-30
 </template>
 
 <script>
