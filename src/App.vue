@@ -11,7 +11,7 @@
 </template>
 
 <script>
-import 'normalize-css';
+import 'normalize.css/normalize.css';
 import 'milligram';
 
 import Result  from './Result.vue';
@@ -44,6 +44,7 @@ export default {
 body {
   background: whitesmoke;
   user-select: none;
+  padding-top: 24px;
 }
 .container {
   margin: 20px auto;
@@ -51,6 +52,6 @@ body {
   width: 1140px;
 }
 .title:not(:first-child) {
-  margin-top: 18px;
+  margin-top: 8px;
 }
 </style>
