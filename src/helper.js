@@ -3,6 +3,6 @@ module.exports = {
     e = e || window.event;
     const target = e.target || e.srcElement;
     const rect = target.getBoundingClientRect();
-    return {offsetX: e.clientX - rect.left, offsetY: e.clientY - Math.floor(rect.top)};
+    return {x: e.clientX - Math.floor(rect.left), y: e.clientY - Math.floor(rect.top)};
   }
 }

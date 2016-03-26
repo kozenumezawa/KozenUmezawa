@@ -73,19 +73,19 @@ export default {
     },
     pickColor (e) {
       if(e.buttons === 0) return;
-      const clickedPoint = helper.getClickedPoint(e);
-      const i = Math.floor(clickedPoint.offsetY * 350 + clickedPoint.offsetX) * 4;
+      const pos = helper.getClickedPoint(e);
+      const i = Math.floor(pos.y * 350 + pos.x) * 4;
       this.currentColor = imgData.slice(i, i + 3);
     },
     updateSpectrum (e) {
       if(e.buttons === 0) return;
       const ctx = this.spectrum.getContext('2d');
-      const clickedPoint = helper.getClickedPoint(e);
+      const pos = helper.getClickedPoint(e);
       ctx.lineWidth = 3;
       ctx.strokeStyle = `rgba(${_.join(this.currentColor, ',')}, 0.7)`;
       ctx.beginPath();
-      ctx.moveTo(clickedPoint.offsetX / ctx.canvas.clientWidth * 100, 0)
-      ctx.lineTo(clickedPoint.offsetX / ctx.canvas.clientWidth * 100, 1);
+      ctx.moveTo(pos.x / ctx.canvas.clientWidth * 100, 0)
+      ctx.lineTo(pos.x / ctx.canvas.clientWidth * 100, 1);
       ctx.stroke();
       ctx.closePath();
       this.applySpectrum();
