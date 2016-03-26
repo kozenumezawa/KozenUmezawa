@@ -24,9 +24,8 @@ export default {
     this.initGraph();
 
     this.$on('reset', () => {
-      radiuses = [[0, 200], [215, 100], [430, 0]];
+      radiuses = [[0, 180], [215, 100], [430, 20]];
       this.initGraph();
-      this.$parent.emit('render');
     });
   },
   methods: {
@@ -91,6 +90,7 @@ export default {
     },
     onMouseUp () {
       isDown = false;
+      this.$parent.emit('render');
     }
   }
 };

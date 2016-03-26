@@ -50,7 +50,6 @@ export default {
       this.initPalette();
       this.initSpectrum();
       this.applySpectrum();
-      this.$parent.emit('render');
     });
   },
   methods: {
@@ -94,6 +93,7 @@ export default {
     applySpectrum () {
       const dump = this.spectrum.getContext('2d').getImageData(0, 0, 100, 1).data;
       this.$parent.spectrum = _(dump).map(d => d/0xff).chunk(4).value();
+      this.$parent.emit('render');
     }
   }
 };

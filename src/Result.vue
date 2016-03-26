@@ -1,11 +1,20 @@
 <template lang="jade">
+.title Result
 #result
+.row
+  .column.column-50
+    //- | Number of vertices: <b>{{ numberOfVertices }}</b><br>
+    //- | Frames per second: <b>{{ framePerSecond }}</b>
+  .column.column-50
+    //- | Maximum value: <b>{{ Math.floor(maxValue * 100) / 100 }}</b><br>
+    //- | Minimum value: <b>{{ Math.floor(minValue * 100) / 100 }}</b>
 </template>
 
 <script>
 import _ from 'lodash';
 
 import THREE from 'three';
+import Stats from 'stats.js';
 const OrbitControls = require('three-orbit-controls')(THREE);
 
 import request from 'axios';
@@ -13,31 +22,30 @@ request.defaults.responseType = 'arraybuffer';
 
 import shader from './shader';
 
-const kvsml = {normal: null, coord: null, value: null};
-let camera, scene, renderer, controls, geometry, material, points;
+const kvsml = {normal: [], coord: [], value: []};
+let camera, scene, renderer, controls, geometry, material, points, stats;
 
 export default {
   ready () {
     this.init();
     this.animate();
 
-    this.$on('apply', () => {
-      this.updateVertexColors();
-      this.updateVertexRadius();
-    });
-
     this.$on('render', () => {
       this.updateVertexColors();
       this.updateVertexRadius();
+      this.updateOpacityParams();
     });
   },
   computed: {
+    el: () => document.getElementById('result'),
     maxValue: () => _.max(kvsml.value),
     minValue: () => _.min(kvsml.value),
-    numberOfVertices: () => kvsml.coord.length / 3
+    numberOfVertices: () => kvsml.coord.length / 3,
   },
   methods: {
     init () {
+      stats = new Stats();
+
       scene = new THREE.Scene();
 
       camera = new THREE.PerspectiveCamera(45, 1, 1, 1000);
@@ -45,14 +53,16 @@ export default {
 
       renderer = new THREE.WebGLRenderer({antialias: true});
       renderer.setPixelRatio(window.devicePixelRatio);
-      renderer.setSize(this.$el.offsetWidth, this.$el.offsetWidth);
+      renderer.setSize(this.el.offsetWidth, this.el.offsetWidth);
+
+      controls = new OrbitControls(camera, renderer.domElement);
 
       geometry = new THREE.BufferGeometry();
 
       material = new THREE.ShaderMaterial(_.assign(THREE.ShaderLib['points'], {
         uniforms: {
-          alphaZero: {type: 'f', value: 0.3},
-          rZero: {type: 'f', value: 0.9}
+          alphaZero: {type: 'f', value: this.$parent.alphaZero},
+          rZero: {type: 'f', value: this.$parent.rZero}
         },
         blending: THREE.AdditiveBlending,
         vertexColors: THREE.VertexColors,
@@ -62,15 +72,14 @@ export default {
 
       points = new THREE.Points(geometry, material);
 
-      controls = new OrbitControls(camera, renderer.domElement);
-
       this.retrieveSampleKvsml();
 
-      this.$el.appendChild(renderer.domElement);
+      this.el.appendChild(renderer.domElement);
     },
     animate () {
       requestAnimationFrame(this.animate);
       controls.update();
+      stats.update();
       this.render();
     },
     render () {
@@ -107,6 +116,10 @@ export default {
       }));
       if(_.compact(radiuses).length === 0) return;
       geometry.addAttribute('radius', new THREE.BufferAttribute(radiuses, 1));
+    },
+    updateOpacityParams () {
+      material.uniforms.alphaZero.value = this.$parent.alphaZero;
+      material.uniforms.rZero.value = this.$parent.rZero;
     }
   }
 }
