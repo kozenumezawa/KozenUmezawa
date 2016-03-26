@@ -1,0 +1,107 @@
+﻿<!doctype html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>内部保持あり</title>
+    <style>canvas { width: 100%; height: 100% }</style>
+</head>
+<body>
+	<script src="three.min.js"></script>
+	<script>
+	var scene;
+	var camera;
+	var renderer = new THREE.WebGLRenderer();
+	renderer.setSize( window.innerWidth, window.innerHeight );
+	document.body.appendChild( renderer.domElement );
+
+	var vss = [];
+
+	function init_points( num )
+	{
+		scene = new THREE.Scene();
+		camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+
+		vss = [];
+		// 頂点の総数　phe+Chromeでは250万点くらいが限界っぽい
+		var numpoints = num;
+
+		var i = 0;
+
+		// 頂点データ列（容量限界チェック用）を作る
+		// JavaScriptの変数型は動的なので、正確なサイズでは無い。少なくとも結構大きい　はず。 
+		for ( i = 0; i<numpoints; i++ )
+	 	{
+		var vs = new vertex_struct( 
+			Math.random() * 10 -  5, Math.random() * 10 -  5, Math.random() * 10 -  5,
+			Math.floor( Math.random() *256 ),
+			Math.floor( Math.random() *256 ),
+			Math.floor( Math.random() *256 ), 
+			Math.random(), Math.random(), Math.random(), i );
+			vss.push( vs );
+		}
+
+		// それを元にパーティクルを作る
+		var geometry = new THREE.Geometry();
+		var colors = [];
+		for ( i = 0; i<numpoints; i++ )
+		{
+			var vertex = new THREE.Vector3();
+			vertex.x = vss[i].x;
+			vertex.y = vss[i].y;
+			vertex.z = vss[i].z;
+			geometry.vertices.push( vertex );
+
+			var color = new THREE.Color( 0xffffff );
+			color.setRGB( vss[i].r, vss[i].g, vss[i].b  );
+			colors.push(color);
+		 }
+		geometry.colors = colors;
+		var material = new THREE.PointCloudMaterial({size: 0.01, vertexColors: true,});
+		particles = new THREE.PointCloud(geometry, material);
+  		particles.sortParticles = false
+  		scene.add(particles);	
+	
+		camera.position.z = 10;
+	}
+	
+	function render()
+	{
+		requestAnimationFrame(render);
+    	
+		particles.rotation.x += 0.01;
+		particles.rotation.y += 0.01;
+		particles.rotation.z += 0.01;
+    	
+		renderer.render(scene, camera);
+	}
+
+	// 頂点データ配列要素構造体(コンストラクタ） 　これを点列数分だけ配列で保つ。
+	function vertex_struct( x,y,z,nx,ny,nz,r,g,b,id)
+	{
+		this.x = x; // 実はfloat(32ビット)といことらしい
+		this.y = y; // float
+		this.z = z; // float
+		this.nx = nx; // Byte
+		this.ny = ny; // Byte
+		this.nz = nz; // Byte
+		this.r = r;  // Byte
+		this.g = g;  // Byte
+		this.b = b; // Byte
+		this.id = id; // unsigned int(32ビット)
+	}
+	
+	function Go()
+	{
+        var num = test_form.NumOfPoints.value;  //テキストエリアの値を取得
+        init_points( num );	render();
+    }
+
+	</script>
+	
+	<form name="test_form" action="datainternal.html">
+	<input type="text" name="NumOfPoints">
+	<input type="button" value="GO" onclick="Go()">
+	</form>
+	
+</body>
+</html>

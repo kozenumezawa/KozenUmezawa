@@ -1,0 +1,43 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
+<meta content="text/css" http-equiv="Content-Style-Type">
+<meta content="text/javascript" http-equiv="Content-Script-Type">
+<title>Correlation Test</title>
+<script src="correlation.js"></script>
+<script src="samplearray.js"></script>
+</head>
+<body>
+<pre>
+相関数取得
+
+<script>
+var r;
+var lag = 2;
+document.write("\n");
+document.write("array A=[");
+for (i = 0; i<A.length;i++) {
+	if ( i == A.length-1) {
+		document.write(A[i]+"]\n");
+	} else {
+		document.write(A[i]+", ");
+	}
+}
+document.write("\n");
+document.write("array B=[");
+for (i = 0; i<B.length;i++) {
+	if ( i == B.length-1) {
+		document.write(B[i]+"]\n");
+	} else {
+		document.write(B[i]+", ");
+	}
+}
+document.write("\n");
+
+r = correlation(A,B,lag);
+document.write("correlation A,B(lag="+lag+"): r="+r);
+</script>
+</pre>
+</body>
+</html>
