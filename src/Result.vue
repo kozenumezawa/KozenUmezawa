@@ -26,7 +26,7 @@ export default {
       this.updateVertexRadius();
     });
 
-    this.$on('reset', () => {
+    this.$on('render', () => {
       this.updateVertexColors();
       this.updateVertexRadius();
     });

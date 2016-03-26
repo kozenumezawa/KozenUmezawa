@@ -50,6 +50,7 @@ export default {
       this.initPalette();
       this.initSpectrum();
       this.applySpectrum();
+      this.$parent.emit('render');
     });
   },
   methods: {
@@ -67,7 +68,7 @@ export default {
       const ctx = this.spectrum.getContext('2d');
       ctx.rect(0, 0, this.spectrum.width, this.spectrum.height);
       const grd = ctx.createLinearGradient(0, 0, this.spectrum.width, 0);
-      _.each(['#0000ff', '#00ffff', '#00ff00', '#ffff00', '#ff0000'], (el, i) => grd.addColorStop(i/4, el));
+      ['#0000ff', '#00ffff', '#00ff00', '#ffff00', '#ff0000'].forEach((v, i) => grd.addColorStop(i/4, v));
       ctx.fillStyle = grd;
       ctx.fill();
     },

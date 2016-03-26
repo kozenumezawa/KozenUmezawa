@@ -26,6 +26,7 @@ export default {
     this.$on('reset', () => {
       radiuses = [[0, 200], [215, 100], [430, 0]];
       this.initGraph();
+      this.$parent.emit('render');
     });
   },
   methods: {
@@ -39,7 +40,9 @@ export default {
       const s = getCurvePoints();
       this.context.beginPath();
       this.context.moveTo(0, 0);
-      for(let i=0; i < s.length - 1; i++) this.context.lineTo(s[i][0], s[i][1]);
+      for(let i=0; i < s.length - 1; i++) {
+        this.context.lineTo(s[i][0], s[i][1]);
+      }
       this.context.stroke();
     },
     drawHandles () {
@@ -52,28 +55,37 @@ export default {
     },
     onMouseDown (e) {
       const pos = helper.getClickedPoint(e);
+
       pIndex = -1;
       isDown = false;
+
   		for(let i=0; i < radiuses.length; i++) {
-        if(Math.abs(pos.x - radiuses[i][0]) < 8 && Math.abs(pos.y - radiuses[i][1] < 8)){
+        if(Math.abs(pos.x - radiuses[i][0]) < 10 && Math.abs(pos.y - radiuses[i][1] < 10)){
           pIndex = i;
           isDown = true;
           return;
         }
   		}
+
       const s = getCurvePoints();
-      const newHandlePos = s.find(pt => Math.abs(pt[0] - pos.x) < 5 && Math.abs(pt[1] - pos.y) < 5);
+      const newHandlePos = s.find(pt => Math.abs(pt[0] - pos.x) < 10 && Math.abs(pt[1] - pos.y) < 10);
+
       if(!newHandlePos) return;
+
       radiuses = radiuses.concat([newHandlePos]).sort((a, b) => a[0] - b[0]);
+
+      this.onMouseDown(e);
       this.initGraph();
     },
     onMouseMove (e) {
       if(!isDown || pIndex === 0 || pIndex === radiuses.length - 1) return;
+
       const pos = helper.getClickedPoint(e);
 			radiuses[pIndex] = [pos.x, pos.y];
 
       // Remove the point if its position is overrapped with another point
       radiuses = _.uniqWith(radiuses.sort((a, b) => a[0] - b[0]), (a, b) => Math.abs(a[0] - b[0]) < 1);
+
       this.initGraph();
     },
     onMouseUp () {
