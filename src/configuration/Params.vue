@@ -5,12 +5,12 @@
     label
       .float-left α<sub>0</sub>
       .float-right: small {{ alphaZero }}
-    input(type="range" max="0.99" min="0.0" step="0.01" v-model="alphaZero" @change="update('alphaZero')" debounce="500")
+    input(type="range" max="0.99" min="0.01" step="0.01" v-model="alphaZero" @change="update('alphaZero')" debounce="500")
   .column.column-50
     label
       .float-left r<sub>0</sub>
       .float-right: small {{ rZero }}
-    input(type="range" max="0.99" min="0.0" step="0.01" v-model="rZero" @change="update('rZero')" debounce="500")
+    input(type="range" max="0.99" min="0.01" step="0.01" v-model="rZero" @change="update('rZero')" debounce="500")
 </template>
 
 <script>

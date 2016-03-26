@@ -3,11 +3,11 @@
 #result
 .row
   .column.column-50
-    //- | Number of vertices: <b>{{ numberOfVertices }}</b><br>
-    //- | Frames per second: <b>{{ framePerSecond }}</b>
+    | Number of vertices: <b>{{ numberOfVertices }}</b><br>
+    | Frames per second: <b>{{ framesPerSecond }}</b>
   .column.column-50
-    //- | Maximum value: <b>{{ Math.floor(maxValue * 100) / 100 }}</b><br>
-    //- | Minimum value: <b>{{ Math.floor(minValue * 100) / 100 }}</b>
+    | Maximum value: <b>{{ Math.floor(maxValue * 100) / 100 }}</b><br>
+    | Minimum value: <b>{{ Math.floor(minValue * 100) / 100 }}</b>
 </template>
 
 <script>
@@ -22,7 +22,6 @@ request.defaults.responseType = 'arraybuffer';
 
 import shader from './shader';
 
-const kvsml = {normal: [], coord: [], value: []};
 let camera, scene, renderer, controls, geometry, material, points, stats;
 
 export default {
@@ -36,11 +35,17 @@ export default {
       this.updateOpacityParams();
     });
   },
+  data () {
+    return {
+      framesPerSecond: 0,
+      kvsml: {normal: [], coord: [], value: []}
+    }
+  },
   computed: {
     el: () => document.getElementById('result'),
-    maxValue: () => _.max(kvsml.value),
-    minValue: () => _.min(kvsml.value),
-    numberOfVertices: () => kvsml.coord.length / 3,
+    maxValue () { return _.max(this.kvsml.value) },
+    minValue () { return _.min(this.kvsml.value) },
+    numberOfVertices () { return this.kvsml.coord.length / 3 }
   },
   methods: {
     init () {
@@ -80,6 +85,7 @@ export default {
       requestAnimationFrame(this.animate);
       controls.update();
       stats.update();
+      this.framesPerSecond = stats.domElement.innerText.slice(0, 2);
       this.render();
     },
     render () {
@@ -88,12 +94,12 @@ export default {
     retrieveSampleKvsml () { // TODO: This block should be replaced with OPeNDAP request.
       request.get('./assets/kvsml/test_coord.dat')
       .then(res => {
-        kvsml.coord = new Float32Array(res.data).slice(0, 90000); // truncate for development
+        this.kvsml.coord = new Float32Array(res.data).slice(0, 900000); // truncate for development
         this.updateVertexCoords();
       })
       .then(() => request.get('./assets/kvsml/test_value.dat'))
       .then(res => {
-        kvsml.value = new Float32Array(res.data).slice(0, 30000); // truncate for development
+        this.kvsml.value = new Float32Array(res.data).slice(0, 300000); // truncate for development
         this.updateVertexColors();
         this.updateVertexRadius();
       })
@@ -101,20 +107,19 @@ export default {
       .catch(console.error);
     },
     updateVertexCoords () {
-      geometry.addAttribute('position', new THREE.BufferAttribute(kvsml.coord, 3));
+      geometry.addAttribute('position', new THREE.BufferAttribute(this.kvsml.coord, 3));
     },
     updateVertexColors () {
-      const colors = new Float32Array(_.flatMap(kvsml.value, v => {
+      const colors = new Float32Array(_.flatMap(this.kvsml.value, v => {
         return this.$parent.spectrum[Math.floor((v - this.minValue) / this.maxValue * 100)];
       }));
       geometry.addAttribute('color', new THREE.BufferAttribute(colors, 4));
     },
     updateVertexRadius () {
-      const radiuses = new Float32Array(_.map(kvsml.value, v => {
+      const radiuses = new Float32Array(_.map(this.kvsml.value, v => {
         const idx = Math.floor(this.$parent.radius.length * (v - this.minValue) / this.maxValue);
         return this.$parent.radius[idx];
       }));
-      if(_.compact(radiuses).length === 0) return;
       geometry.addAttribute('radius', new THREE.BufferAttribute(radiuses, 1));
     },
     updateOpacityParams () {

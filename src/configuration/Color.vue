@@ -11,7 +11,7 @@
       span!= "B: {{ currentColor[2] }}"
 
 .title Spectrum
-canvas#spectrum(@mousemove="updateSpectrum" @mousedown="updateSpectrum" width="100" height="1")
+canvas#spectrum(@mousemove="updateSpectrum" @mousedown="updateSpectrum" width="100" height="1" debounce="500")
 </template>
 
 <script>
