@@ -12,7 +12,7 @@ import helper from '../helper';
 let pIndex = -1;
 let isDown = false;
 
-let radiuses = [[0, 200], [215, 100], [430, 0]];
+let radiuses = [[0, 180], [215, 100], [430, 20]];
 const getCurvePoints = () => _.chunk(spline.getCurvePoints(_.flatten(radiuses), 0.2, 50, false), 2);
 
 export default {
@@ -34,12 +34,13 @@ export default {
       this.context.clearRect(0, 0, radius.width, radius.height);
       this.drawLine();
       this.drawHandles();
-      this.$parent.radius = _.map(getCurvePoints(), pt => 1.0 - pt[1] / radius.height);
+
+      // Additional 0.0001 is used to prevent divergence of particle size
+      this.$parent.radius = _.map(getCurvePoints(), pt => 1.00001 - pt[1] / radius.height);
     },
     drawLine () {
       const s = getCurvePoints();
       this.context.beginPath();
-      this.context.moveTo(0, 0);
       for(let i=0; i < s.length - 1; i++) {
         this.context.lineTo(s[i][0], s[i][1]);
       }

@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   getClickedPoint: (e) => { // Normalizing the mouse event differences between browsers
     e = e || window.event;
     const target = e.target || e.srcElement;

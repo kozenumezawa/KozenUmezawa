@@ -40,17 +40,20 @@ export default {
     init () {
       scene = new THREE.Scene();
 
-      camera = new THREE.PerspectiveCamera(45, 1/0.8, 1, 1000);
+      camera = new THREE.PerspectiveCamera(45, 1, 1, 1000);
       camera.position.x = 80;
 
       renderer = new THREE.WebGLRenderer({antialias: true});
       renderer.setPixelRatio(window.devicePixelRatio);
-      renderer.setSize(this.$el.offsetWidth, this.$el.offsetWidth * 0.8);
+      renderer.setSize(this.$el.offsetWidth, this.$el.offsetWidth);
 
       geometry = new THREE.BufferGeometry();
 
       material = new THREE.ShaderMaterial(_.assign(THREE.ShaderLib['points'], {
-    		uniforms: THREE.UniformsLib[ "points" ],
+        uniforms: {
+          alphaZero: {type: 'f', value: 0.3},
+          rZero: {type: 'f', value: 0.9}
+        },
         blending: THREE.AdditiveBlending,
         vertexColors: THREE.VertexColors,
         vertexShader: shader.vertexShader,
@@ -99,7 +102,7 @@ export default {
     },
     updateVertexRadius () {
       const radiuses = new Float32Array(_.map(kvsml.value, v => {
-        const idx = Math.floor((v - this.minValue) / this.maxValue * this.$parent.radius.length);
+        const idx = Math.floor(this.$parent.radius.length * (v - this.minValue) / this.maxValue);
         return this.$parent.radius[idx];
       }));
       if(_.compact(radiuses).length === 0) return;

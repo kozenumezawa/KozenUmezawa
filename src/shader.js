@@ -1,8 +1,11 @@
 import THREE from 'three';
 
-module.exports = {
+export default {
   vertexShader: [
     "attribute float radius;",
+
+    "uniform float alphaZero;",
+    "uniform float rZero;",
 
     THREE.ShaderChunk["common"],
     THREE.ShaderChunk["color_pars_vertex"],
@@ -19,14 +22,12 @@ module.exports = {
     // THREE.ShaderChunk["worldpos_vertex"],
     // THREE.ShaderChunk["shadowmap_vertex"],
 
-    "  gl_PointSize = radius * 5.0;",
+    " gl_PointSize = rZero * sqrt( log(1.0 - radius) / log(1.0 - alphaZero) );",
 
-    "}",
+    "}"
   ].join("\n"),
 
   fragmentShader: [
-    "uniform vec3 diffuse;",
-
     THREE.ShaderChunk["common"],
     THREE.ShaderChunk["color_pars_fragment"],
     // THREE.ShaderChunk["map_particle_pars_fragment"],
@@ -40,13 +41,12 @@ module.exports = {
     "  n.z = 1.0 - dot( n.xy, n.xy );",
     "  if ( n.z < 0.0 ) discard;",
 
-    "  vec4 diffuseColor = vec4(diffuse, 1.0);",
+    "  vec4 diffuseColor = vec4(1.0, 1.0, 1.0, 1.0);",
 
     // THREE.ShaderChunk["logdepthbuf_fragment"],
     // THREE.ShaderChunk["map_particle_fragment"],
     THREE.ShaderChunk["color_fragment"],
     // THREE.ShaderChunk["alphatest_fragment"],
-
     // THREE.ShaderChunk["fog_fragment"],
 
     "  gl_FragColor = diffuseColor;",
