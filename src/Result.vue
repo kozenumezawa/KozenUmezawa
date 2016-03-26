@@ -99,8 +99,10 @@ export default {
     },
     updateVertexRadius () {
       const radiuses = new Float32Array(_.map(kvsml.value, v => {
-        return this.$parent.radius[Math.floor((v - this.minValue) / this.maxValue * 100)];
+        const idx = Math.floor((v - this.minValue) / this.maxValue * this.$parent.radius.length);
+        return this.$parent.radius[idx];
       }));
+      if(_.compact(radiuses).length === 0) return;
       geometry.addAttribute('radius', new THREE.BufferAttribute(radiuses, 1));
     }
   }

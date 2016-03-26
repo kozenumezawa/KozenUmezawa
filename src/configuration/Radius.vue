@@ -1,60 +1,83 @@
 <template lang="jade">
-.title Particle size (WIP)
-canvas#radius(@mousemove="updateRadius" @mousedown="updateRadius" width="430" height="60")
+.title Particle size
+canvas#radius(width="430" height="200" @mousemove="onMouseMove" @mousedown="onMouseDown" @mouseup="onMouseUp" @mouseleave="onMouseUp")
 </template>
 
 <script>
+import _ from 'lodash';
+import spline from 'cardinal-spline-js';
+
 import helper from '../helper';
+
+let pIndex = -1;
+let isDown = false;
+
+let radiuses = [[0, 200], [215, 100], [430, 0]];
+const getCurvePoints = () => _.chunk(spline.getCurvePoints(_.flatten(radiuses), 0.2, 50, false), 2);
 
 export default {
   computed: {
-    radius: () => document.getElementById('radius')
-  },
-  data () {
-    return {
-      radiusArray: null
-    }
+    radius: () => document.getElementById('radius'),
+    context: () => document.getElementById('radius').getContext('2d'),
   },
   ready () {
-    this.initRadius();
-    this.fillGradient();
-    this.drawLevelLine();
-    this.applyRadius();
+    this.initGraph();
 
     this.$on('reset', () => {
-      this.initRadius();
-      this.fillGradient();
-      this.drawLevelLine();
-      this.applyRadius();
+      radiuses = [[0, 200], [215, 100], [430, 0]];
+      this.initGraph();
     });
   },
   methods: {
-    initRadius () {
-      this.radiusArray = Array(100).fill(null);
+    initGraph () {
+      this.context.clearRect(0, 0, radius.width, radius.height);
+      this.drawLine();
+      this.drawHandles();
+      this.$parent.radius = _.map(getCurvePoints(), pt => 1.0 - pt[1] / radius.height);
     },
-    fillGradient () {
-      const ctx = this.radius.getContext('2d');
-      const grd = ctx.createLinearGradient(0, 0, this.radius.width, 0);
-      ctx.clearRect(0, 0, this.radius.width, this.radius.height);
-      _.each(this.radiusArray, (c, idx) => {
-        if(!c) return grd.addColorStop(idx / this.radius.width, 'rgba(40,40,40,255)');
-        grd.addColorStop(idx / this.radius.width, `rgba(${c},${c},${c},255)`);
-      });
-      ctx.fillStyle = grd;
-      ctx.rect(0, 0, this.radius.width, this.radius.height);
-      ctx.fill();
+    drawLine () {
+      const s = getCurvePoints();
+      this.context.beginPath();
+      this.context.moveTo(0, 0);
+      for(let i=0; i < s.length - 1; i++) this.context.lineTo(s[i][0], s[i][1]);
+      this.context.stroke();
     },
-    updateRadius (e) {
-      if(e.buttons === 0) return;
-      const ctx = this.radius.getContext('2d');
-      const clickedPoint = helper.getClickedPoint(e);
-      this.radiusArray[Math.floor(clickedPoint.offsetX)] = Math.floor(clickedPoint.offsetY / 60 * 255);
-      this.fillGradient();
-      this.applyRadius();
+    drawHandles () {
+      this.context.strokeStyle = 'black';
+      this.context.beginPath();
+      for(let i=1; i < radiuses.length - 1; i++){
+        this.context.rect(radiuses[i][0] - 3, radiuses[i][1] - 3, 6, 6);
+      }
+      this.context.stroke();
     },
-    applyRadius () {
-      const dump = this.radius.getContext('2d').getImageData(0, 0, this.radius.width, 1).data;
-      _.times(this.radius.width, i => this.$parent.radius[i] = dump[i*4] / 255);
+    onMouseDown (e) {
+      const pos = helper.getClickedPoint(e);
+      pIndex = -1;
+      isDown = false;
+  		for(let i=0; i < radiuses.length; i++) {
+        if(Math.abs(pos.x - radiuses[i][0]) < 8 && Math.abs(pos.y - radiuses[i][1] < 8)){
+          pIndex = i;
+          isDown = true;
+          return;
+        }
+  		}
+      const s = getCurvePoints();
+      const newHandlePos = s.find(pt => Math.abs(pt[0] - pos.x) < 5 && Math.abs(pt[1] - pos.y) < 5);
+      if(!newHandlePos) return;
+      radiuses = radiuses.concat([newHandlePos]).sort((a, b) => a[0] - b[0]);
+      this.initGraph();
+    },
+    onMouseMove (e) {
+      if(!isDown || pIndex === 0 || pIndex === radiuses.length - 1) return;
+      const pos = helper.getClickedPoint(e);
+			radiuses[pIndex] = [pos.x, pos.y];
+
+      // Remove the point if its position is overrapped with another point
+      radiuses = _.uniqWith(radiuses.sort((a, b) => a[0] - b[0]), (a, b) => Math.abs(a[0] - b[0]) < 1);
+      this.initGraph();
+    },
+    onMouseUp () {
+      isDown = false;
     }
   }
 };
@@ -62,8 +85,7 @@ export default {
 
 <style scoped>
 #radius {
-  width: 430px;
-  height: 60px;
   border: 1px solid #aaa;
+  cursor: crosshair;
 }
 </style>
