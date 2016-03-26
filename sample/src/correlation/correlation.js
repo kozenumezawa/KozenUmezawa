@@ -1,38 +1,64 @@
-function getSum(A,B,sumfunction) {
-	var sum  = 0.0;
-	for (var i=0 ; i<A.length ; i++){
-		sum = sum + sumfunction(A[i],B[i]);
+class Correlation {
+	constructor(){
 	}
-	return sum;
+
+	//input
+	setComparison(A, B){
+		this.A = A;
+		this.B = B;
+		return this;
+	}
+
+	setLag(lag){
+		this.lag = lag;
+		return this;
+	}
+
+	//calc
+	covariance(A, B){
+		let l = A.length;
+		let A_Sum = A.reduce((a, b) => a + b, 0);
+		let B_Sum = B.reduce((a, b) => a + b, 0);
+		let A_Average = A_Sum / l;
+		let B_Average = B_Sum / l;
+		let result = 0;
+		for(let i = 0; i < l; i++){
+			result = result + (A[i] - A_Average) * (B[i] - B_Average);
+		}
+		return result;
+	}
+
+	standard(A, B){
+		let l = A.length;
+		let A_Sum = A.reduce((a, b) => a + b, 0);
+		let B_Sum = B.reduce((a, b) => a + b, 0);
+		let A_Average = A_Sum / l;
+		let B_Average = B_Sum / l;
+		let X = 0;
+		let Y = 0;
+		for(let i = 0; i < l; i++){
+			X += Math.pow(A[i] - A_Average, 2);
+			Y += Math.pow(B[i] - B_Average, 2);
+		}
+		let result = Math.pow(X*Y, 1/2);
+		return result;
+	}
+
+	calc(A, B, lag){
+		const sampleAmount = A.length > B.length ? B.length : A.length;
+		let sampleA = A.slice(0, sampleAmount - lag);
+		let sampleB = B.slice(lag, sampleAmount);
+		return this.covariance(sampleA, sampleB) / this.standard(sampleA, sampleB);
+	}
+
+	//output
+	getResult(){
+		if(this.A.length <= lag || this.B.length <= lag) throw new Error("Invalid comparison data length.");
+		return this.calc(this.A, this.B, this.lag);
+	}
 }
 
-function correlation(A,B,lag) {
-	if ( A.length > B.length) {
-		var arraylength = B.length;
-	} else {
-		var arraylength = A.length;
-	}
-
-  if (arraylength <= lag) {
-      throw new Error("ERROR! Data length is too few.");
-  }
-
-	A = A.slice(0,arraylength-lag);
-	B = B.slice(lag,arraylength);
-
-
-	var numerator_tmp = getSum(A,B,function(a,b) { return a*b;}) - 
-		getSum(A,A,function(a,b) {return a;})* getSum(B,B,function(a,b) { return a;})/A.length;
-
-	var denominator_subfunc = function(A) {
-		var ret = getSum(A,A,function(a,b) { return a*b;}) - 
-			Math.pow(getSum(A,A,function(a,b) { return a;}),2)/A.length;
-		return ret;
-	};
-	var denominator_tmp = 
-		Math.pow(denominator_subfunc(A),0.5)*Math.pow(denominator_subfunc(B),0.5);
-
-	var r = numerator_tmp / denominator_tmp;
-	return r;
-
+//for sample
+function correlation(A, B, lag){
+	return new Correlation().setComparison(A, B).setLag(lag).getResult();
 }
