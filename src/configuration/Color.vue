@@ -40,7 +40,7 @@ export default {
       return _.join([
         `R: ${this.currentColor[0]}`,
         `G: ${this.currentColor[1]}`,
-        `B: ${this.currentColor[2]}`,
+        `B: ${this.currentColor[2]}`
       ], '<br>');
     }
   },
