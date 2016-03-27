@@ -1,6 +1,7 @@
 <template lang="jade">
 .title Result
 #result
+warning(:show.sync="warningVisible")
 .row
   .column.column-50
     | Number of vertices: <b>{{ numberOfVertices }}</b><br>
@@ -24,7 +25,12 @@ import shader from './shader';
 
 let camera, scene, renderer, controls, geometry, material, points, stats;
 
+import Warning from './Warning.vue';
+
 export default {
+  components: {
+    Warning
+  },
   ready () {
     this.init();
     this.animate();
@@ -47,7 +53,8 @@ export default {
   data () {
     return {
       framesPerSecond: 0,
-      kvsml: {normal: [], coord: [], value: []}
+      kvsml: {normal: [], coord: [], value: []},
+      warningVisible: false,
     }
   },
   computed: {
@@ -97,7 +104,6 @@ export default {
       renderer.render(scene, camera);
     },
     updateAttriutes () {
-      this.updateVertexCoords();
       this.updateVertexColors();
       this.updateVertexRadius();
       this.updateOpacityParams();
@@ -105,15 +111,25 @@ export default {
     retrieveSampleKvsml () { // TODO: This block should be replaced with OPeNDAP request if needed.
       request.get('./assets/kvsml/test_coord.dat')
       .then(res => {
-        this.kvsml.coord = new Float32Array(res.data).slice(0, 90000); // truncate for development
+        this.kvsml.coord = new Float32Array(res.data);
+        this.updateVertexCoords();
       })
       .then(() => request.get('./assets/kvsml/test_value.dat'))
       .then(res => {
-        this.kvsml.value = new Float32Array(res.data).slice(0, 30000); // truncate for development
+        this.kvsml.value = new Float32Array(res.data);
+      })
+      .then(() => {
+        if(this.kvsml.coord.length / 3 > 1000000){
+          this.warningVisible = true;
+        } else {
+          this.addPointsToScene();
+        }
       })
       .then(() => this.updateAttriutes())
-      .then(() => scene.add(points))
       .catch(console.error);
+    },
+    addPointsToScene () {
+      scene.add(points);
     },
     updateVertexCoords () {
       geometry.addAttribute('position', new THREE.BufferAttribute(this.kvsml.coord, 3));
