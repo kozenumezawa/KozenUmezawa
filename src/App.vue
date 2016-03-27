@@ -1,6 +1,6 @@
 <template lang="jade">
 .container
-  .row
+  .row(v-if="supportWebGL")
     .column.column-60
       result
     .column
@@ -8,6 +8,12 @@
       radius
       params
       buttons
+  .unsupported(v-if="!supportWebGL")
+    p: strong
+      | The browser that you're using does not support WebGL technology.<br>
+      | Please use a newer browser instead, or check if the feature is enabled.
+    p: a(href="http://webglreport.com/") Does My Browser Support WebGL?
+    p: a(href="http://caniuse.com/#feat=webgl") Can I use? - WebGL, 3D Canvas graphics
 </template>
 
 <script>
@@ -36,6 +42,16 @@ export default {
       rZero: 0.9
     }
   },
+  computed: {
+    supportWebGL: () => {
+      try {
+        const c = document.createElement('canvas');
+        return !! (window.WebGLRenderingContext && (c.getContext('webgl') || c.getContext('experimental-webgl')));
+      } catch (e) {
+        return false;
+      }
+    }
+  },
   methods: {
     emit (name) {
       this.$broadcast(name);
@@ -48,7 +64,7 @@ export default {
 body {
   background: whitesmoke;
   user-select: none;
-  padding-top: 24px;
+  padding: 24px 0;
 }
 .container {
   margin: 20px auto;
@@ -57,5 +73,8 @@ body {
 }
 .title:not(:first-child) {
   margin-top: 8px;
+}
+.unsupported {
+  text-align: center;
 }
 </style>

@@ -1,5 +1,5 @@
 # pbr
-> A particle based renderer
+A particle based renderer
 
 ## Build Setup
 ``` bash
@@ -13,11 +13,6 @@ npm run dev
 npm run build
 ```
 
-## Dependencies
-Three.js and its plugins are served from `src/vendor` directory.
-
-- Three.js (r74)
-- OrbitControls.js
 
 ## Test data
 For easy development and check the rendering result, there should be test point files in
