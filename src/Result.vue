@@ -55,6 +55,7 @@ export default {
       camera.position.x = 80;
 
       renderer = new THREE.WebGLRenderer({antialias: true});
+      renderer.setPixelRatio(window.devicePixelRatio ? window.devicePixelRatio : 1);
       renderer.setSize(this.el.offsetWidth, this.el.offsetWidth);
 
       controls = new OrbitControls(camera, renderer.domElement);
