@@ -21,7 +21,7 @@ const OrbitControls = require('three-orbit-controls')(THREE);
 import request from 'axios';
 request.defaults.responseType = 'arraybuffer';
 
-import shader from './shader';
+import shader from '../shader';
 
 let camera, scene, renderer, controls, geometry, material, points, stats;
 

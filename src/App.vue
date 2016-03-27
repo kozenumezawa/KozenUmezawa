@@ -20,11 +20,11 @@
 import 'normalize.css/normalize.css';
 import 'milligram';
 
-import Result  from './Result.vue';
-import Color   from './configuration/Color.vue';
-import Radius  from './configuration/Radius.vue';
-import Params  from './configuration/Params.vue';
-import Buttons from './Buttons.vue';
+import Result  from './components/Result.vue';
+import Color   from './components/Color.vue';
+import Radius  from './components/Radius.vue';
+import Params  from './components/Params.vue';
+import Buttons from './components/Buttons.vue';
 
 export default {
   components: {
