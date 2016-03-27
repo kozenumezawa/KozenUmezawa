@@ -29,9 +29,20 @@ export default {
     this.init();
     this.animate();
 
-    this.$on('updateVertexColors', () => this.updateVertexColors());
-    this.$on('updateVertexRadius', () => this.updateVertexRadius());
-    this.$on('updateOpacityParams', () => this.updateOpacityParams());
+    this.$on('updateVertexColors', () => {
+      if(this.$parent.applyImmediately) this.updateVertexColors();
+    });
+
+    this.$on('updateVertexRadius', () => {
+      if(this.$parent.applyImmediately) this.updateVertexRadius();
+    });
+
+    this.$on('updateOpacityParams', () => {
+      if(this.$parent.applyImmediately) this.updateOpacityParams();
+    });
+
+    this.$on('apply', () => this.updateAttriutes());
+    this.$on('reset', () => this.updateAttriutes());
   },
   data () {
     return {
@@ -67,7 +78,6 @@ export default {
           alphaZero: {type: 'f', value: this.$parent.alphaZero},
           rZero: {type: 'f', value: this.$parent.rZero}
         },
-        blending: THREE.AdditiveBlending,
         vertexColors: THREE.VertexColors,
         vertexShader: shader.vertexShader,
         fragmentShader: shader.fragmentShader
@@ -84,23 +94,24 @@ export default {
       controls.update();
       stats.update();
       this.framesPerSecond = stats.domElement.innerText.slice(0, 2);
-      this.render();
-    },
-    render () {
       renderer.render(scene, camera);
+    },
+    updateAttriutes () {
+      this.updateVertexCoords();
+      this.updateVertexColors();
+      this.updateVertexRadius();
+      this.updateOpacityParams();
     },
     retrieveSampleKvsml () { // TODO: This block should be replaced with OPeNDAP request if needed.
       request.get('./assets/kvsml/test_coord.dat')
       .then(res => {
-        this.kvsml.coord = new Float32Array(res.data).slice(0, 900000); // truncate for development
-        this.updateVertexCoords();
+        this.kvsml.coord = new Float32Array(res.data).slice(0, 90000); // truncate for development
       })
       .then(() => request.get('./assets/kvsml/test_value.dat'))
       .then(res => {
-        this.kvsml.value = new Float32Array(res.data).slice(0, 300000); // truncate for development
-        this.updateVertexColors();
-        this.updateVertexRadius();
+        this.kvsml.value = new Float32Array(res.data).slice(0, 30000); // truncate for development
       })
+      .then(() => this.updateAttriutes())
       .then(() => scene.add(points))
       .catch(console.error);
     },

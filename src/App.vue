@@ -39,7 +39,8 @@ export default {
       spectrum: [],
       radius: [],
       alphaZero: 0.3,
-      rZero: 0.9
+      rZero: 0.9,
+      applyImmediately: true
     }
   },
   computed: {
