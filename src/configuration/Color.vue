@@ -2,7 +2,8 @@
 .title Color palette
 .row
   .column.column-80
-    canvas#palette(@mousemove="pickColor" @mousedown="pickColor" width="350" height="128")
+    canvas#palette(@mousemove="pickColor" @mousedown="onMouseDown" @mouseup="onMouseUp"
+                   @mouseleave="onMouseUp" width="350" height="128")
   .column.column-20
     .block(v-bind:style="{background: blockColor}")
     .rgb
@@ -11,7 +12,8 @@
       span!= "B: {{ currentColor[2] }}"
 
 .title Spectrum
-canvas#spectrum(@mousemove="updateSpectrum" @mousedown="updateSpectrum" width="100" height="1" debounce="500")
+canvas#spectrum(@mousemove="updateSpectrum" @mousedown="onMouseDown" @mouseup="onMouseUp"
+                @mouseleave="onMouseUp" width="100" height="1" debounce="500")
 </template>
 
 <script>
@@ -20,6 +22,7 @@ import _ from 'lodash';
 import helper from '../helper';
 
 let imgData = [];
+let isDown = false;
 
 export default {
   data () {
@@ -68,18 +71,18 @@ export default {
       const ctx = this.spectrum.getContext('2d');
       ctx.rect(0, 0, this.spectrum.width, this.spectrum.height);
       const grd = ctx.createLinearGradient(0, 0, this.spectrum.width, 0);
-      ['#0000ff', '#00ffff', '#00ff00', '#ffff00', '#ff0000'].forEach((v, i) => grd.addColorStop(i/4, v));
+      ['#0000ff','#00ffff','#00ff00','#ffff00','#ff0000'].forEach((v, i) => grd.addColorStop(i/4, v));
       ctx.fillStyle = grd;
       ctx.fill();
     },
     pickColor (e) {
-      if(e.buttons === 0) return;
+      if(e.buttons === 0 || !isDown) return;
       const pos = helper.getClickedPoint(e);
       const i = Math.floor(pos.y * 350 + pos.x) * 4;
       this.currentColor = imgData.slice(i, i + 3);
     },
     updateSpectrum (e) {
-      if(e.buttons === 0) return;
+      if(e.buttons === 0 || !isDown) return;
       const ctx = this.spectrum.getContext('2d');
       const pos = helper.getClickedPoint(e);
       ctx.lineWidth = 3;
@@ -94,6 +97,12 @@ export default {
     applySpectrum () {
       const dump = this.spectrum.getContext('2d').getImageData(0, 0, 100, 1).data;
       this.$parent.spectrum = _(dump).map(d => d/0xff).chunk(4).value();
+    },
+    onMouseDown () {
+      isDown = true;
+    },
+    onMouseUp () {
+      isDown = false;
       this.$parent.emit('updateVertexColors');
     }
   }

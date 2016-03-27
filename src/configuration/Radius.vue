@@ -1,6 +1,7 @@
 <template lang="jade">
 .title Particle size
-canvas#radius(width="430" height="200" @mousemove="onMouseMove" @mousedown="onMouseDown" @mouseup="onMouseUp" @mouseleave="onMouseUp")
+canvas#radius(width="430" height="200" @mousemove="onMouseMove" @mousedown="onMouseDown"
+              @mouseup="onMouseUp" @mouseleave="onMouseUp")
 </template>
 
 <script>

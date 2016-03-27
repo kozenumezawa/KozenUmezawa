@@ -89,7 +89,7 @@ export default {
     render () {
       renderer.render(scene, camera);
     },
-    retrieveSampleKvsml () { // TODO: This block should be replaced with OPeNDAP request.
+    retrieveSampleKvsml () { // TODO: This block should be replaced with OPeNDAP request if needed.
       request.get('./assets/kvsml/test_coord.dat')
       .then(res => {
         this.kvsml.coord = new Float32Array(res.data).slice(0, 900000); // truncate for development
