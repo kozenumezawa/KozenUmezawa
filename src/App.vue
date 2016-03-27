@@ -12,8 +12,8 @@
     p: strong
       | The browser that you're using does not support WebGL technology.<br>
       | Please use a newer browser instead, or check if the feature is enabled.
-    p: a(href="http://webglreport.com/") Does My Browser Support WebGL?
-    p: a(href="http://caniuse.com/#feat=webgl") Can I use? - WebGL, 3D Canvas graphics
+    p: a(href="http://webglreport.com/") WebGL Report
+    p: a(href="http://caniuse.com/#feat=webgl") Can I use? - WebGL
 </template>
 
 <script>
