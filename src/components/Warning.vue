@@ -2,7 +2,7 @@
 .message(v-if="show")
   .message-header WARNING
   .message-body
-    | The number of vertices are critically large.
+    | The number of vertices is critically large.
     | This may cause slow performance and eventually the browser will crash.<br>
     | Do you want to continue?
     .button-wrapper.clearfix
