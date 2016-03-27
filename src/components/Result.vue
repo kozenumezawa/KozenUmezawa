@@ -21,11 +21,10 @@ const OrbitControls = require('three-orbit-controls')(THREE);
 import request from 'axios';
 request.defaults.responseType = 'arraybuffer';
 
+import Warning from './Warning.vue';
 import shader from '../shader';
 
 let camera, scene, renderer, controls, geometry, material, points, stats;
-
-import Warning from './Warning.vue';
 
 export default {
   components: {
@@ -54,7 +53,7 @@ export default {
     return {
       framesPerSecond: 0,
       kvsml: {normal: [], coord: [], value: []},
-      warningVisible: false,
+      warningVisible: false
     }
   },
   computed: {
@@ -76,8 +75,6 @@ export default {
       renderer.setPixelRatio(window.devicePixelRatio ? window.devicePixelRatio : 1);
       renderer.setSize(this.el.offsetWidth, this.el.offsetWidth);
 
-      controls = new OrbitControls(camera, renderer.domElement);
-
       geometry = new THREE.BufferGeometry();
 
       material = new THREE.ShaderMaterial(_.assign(THREE.ShaderLib['points'], {
@@ -91,6 +88,8 @@ export default {
       }));
 
       points = new THREE.Points(geometry, material);
+
+      controls = new OrbitControls(camera, renderer.domElement);
 
       this.retrieveSampleKvsml();
 
