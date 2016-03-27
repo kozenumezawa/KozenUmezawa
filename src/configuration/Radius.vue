@@ -26,6 +26,7 @@ export default {
     this.$on('reset', () => {
       radiuses = [[0, 180], [215, 100], [430, 20]];
       this.initGraph();
+      this.$parent.emit('updateVertexRadius');
     });
   },
   methods: {
@@ -90,7 +91,7 @@ export default {
     },
     onMouseUp () {
       isDown = false;
-      this.$parent.emit('render');
+      this.$parent.emit('updateVertexRadius');
     }
   }
 };

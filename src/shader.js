@@ -9,8 +9,8 @@ export default {
 
     THREE.ShaderChunk["common"],
     THREE.ShaderChunk["color_pars_vertex"],
-    THREE.ShaderChunk["shadowmap_pars_vertex"],
-    THREE.ShaderChunk["logdepthbuf_pars_vertex"],
+    // THREE.ShaderChunk["shadowmap_pars_vertex"],
+    // THREE.ShaderChunk["logdepthbuf_pars_vertex"],
 
     "void main() {",
 

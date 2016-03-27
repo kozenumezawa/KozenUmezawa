@@ -29,11 +29,9 @@ export default {
     this.init();
     this.animate();
 
-    this.$on('render', () => {
-      this.updateVertexColors();
-      this.updateVertexRadius();
-      this.updateOpacityParams();
-    });
+    this.$on('updateVertexColors', () => this.updateVertexColors());
+    this.$on('updateVertexRadius', () => this.updateVertexRadius());
+    this.$on('updateOpacityParams', () => this.updateOpacityParams());
   },
   data () {
     return {
@@ -57,7 +55,6 @@ export default {
       camera.position.x = 80;
 
       renderer = new THREE.WebGLRenderer({antialias: true});
-      renderer.setPixelRatio(window.devicePixelRatio);
       renderer.setSize(this.el.offsetWidth, this.el.offsetWidth);
 
       controls = new OrbitControls(camera, renderer.domElement);

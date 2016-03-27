@@ -22,6 +22,7 @@ export default {
       this.$parent.alphaZero = 0.3;
       this.$parent.rZero = 0.9;
       this.init();
+      this.$parent.emit('updateOpacityParams');
     });
   },
   data () {
@@ -37,7 +38,7 @@ export default {
     },
     update (type) {
       this.$parent[type] = this[type];
-      this.$parent.emit('render');
+      this.$parent.emit('updateOpacityParams');
     }
   },
 }
