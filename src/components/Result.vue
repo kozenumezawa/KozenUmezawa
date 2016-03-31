@@ -26,8 +26,6 @@ export default {
     Warning
   },
   ready () {
-    pbvr.animate();
-
     this.$on('updateVertexColors', () => {
       if(this.$parent.applyImmediately){
         pbvr.updateVertexColors(this.$parent.spectrum);
@@ -52,12 +50,14 @@ export default {
     document.getElementById('result').appendChild(pbvr.getDomElement());
 
     this.retrieveSampleKvsml();
+
+    pbvr.animate();
   },
   data () {
     return {
-      framesPerSecond: 0,
       minValue: 0,
       maxValue: 0,
+      framesPerSecond: 0,
       numberOfVertices: 0,
       warningVisible: false
     }
@@ -76,7 +76,7 @@ export default {
         }
       })
       .then(() => pbvr.updateAllAttriutes(this.$parent))
-      .then(() => this.updateStats())
+      .then(this.updateStats);
     },
     addPointsToScene () {
       pbvr.addPointsToScene();
@@ -85,6 +85,7 @@ export default {
       this.minValue = Math.floor(pbvr.getMinValue() * 100) / 100;
       this.maxValue = Math.floor(pbvr.getMaxValue() * 100) / 100;
       this.numberOfVertices = pbvr.getNumberOfVertices();
+
       setInterval(() => {
         this.framesPerSecond = pbvr.getFramesPerSecond();
       }, 1000);

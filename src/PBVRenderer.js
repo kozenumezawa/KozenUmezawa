@@ -10,16 +10,16 @@ export default class PBVRenderer {
   constructor (width, height) {
     this.animate = this.animate.bind(this);
 
+    this.renderer = new THREE.WebGLRenderer({antialias: true});
+    this.renderer.setPixelRatio(window.devicePixelRatio ? window.devicePixelRatio : 1);
+    this.renderer.setSize(width, height);
+
     this.stats = new Stats();
 
     this.scene = new THREE.Scene();
 
     this.camera = new THREE.PerspectiveCamera(45, 1, 1, 1000);
     this.camera.position.x = 80;
-
-    this.renderer = new THREE.WebGLRenderer({antialias: true});
-    this.renderer.setPixelRatio(window.devicePixelRatio ? window.devicePixelRatio : 1);
-    this.renderer.setSize(width, height);
 
     this.geometry = new THREE.BufferGeometry();
 
@@ -60,7 +60,7 @@ export default class PBVRenderer {
   }
 
   getFramesPerSecond () {
-    return this.stats.domElement.innerText.slice(0, 2);
+    return this.stats.domElement.innerText.split(' ')[0];
   }
 
   getDomElement () {

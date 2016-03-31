@@ -3,7 +3,7 @@
   .row(v-if="supportWebGL")
     .column.column-60
       result
-    .column
+    .column.column-40
       color
       radius
       params

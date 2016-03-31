@@ -78,7 +78,7 @@ export default {
     pickColor (e) {
       if(e.buttons === 0 || !isDown) return;
       const pos = helper.getClickedPoint(e);
-      const i = Math.floor(pos.y * 350 + pos.x) * 4;
+      const i = Math.floor(pos.y * this.palette.width + pos.x) * 4;
       this.currentColor = imgData.slice(i, i + 3);
     },
     updateSpectrum (e) {
@@ -117,13 +117,15 @@ export default {
   height: 40px;
   width: 430px;
 }
-.rgb {
-  font-family: monospace;
-  font-size: 15px;
-}
 .block {
   display: inline-block;
-  width: 60px;
-  height: 50px;
+  width: 50px;
+  height: 36px;
+  margin: 14px 0 0 10px;
+}
+.rgb {
+  font-family: monospace;
+  font-size: 13px;
+  padding-left: 10px
 }
 </style>
