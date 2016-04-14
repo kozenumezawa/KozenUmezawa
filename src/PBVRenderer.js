@@ -83,15 +83,18 @@ export default class PBVRenderer {
   }
 
   updateVertexColors (spectrum) {
+    const range = spectrum.length - 1;
     const colors = new Float32Array(_.flatMap(this.kvsml.values, v => {
-      return spectrum[Math.floor(100 * (v - this.kvsml.minValue) / this.kvsml.maxValue)];
+      const idx = Math.floor(range * (v - this.kvsml.minValue) / (this.kvsml.maxValue - this.kvsml.minValue));
+      return spectrum[idx];
     }));
     this.geometry.addAttribute('color', new THREE.BufferAttribute(colors, 4));
   }
 
   updateVertexRadius (radius) {
+    const range = radius.length - 1;
     const radiuses = new Float32Array(_.map(this.kvsml.values, v => {
-      const idx = Math.floor(radius.length * (v - this.kvsml.minValue) / this.kvsml.maxValue);
+      const idx = Math.floor(range * (v - this.kvsml.minValue) / (this.kvsml.maxValue - this.kvsml.minValue));
       return radius[idx];
     }));
     this.geometry.addAttribute('radius', new THREE.BufferAttribute(radiuses, 1));
