@@ -91,7 +91,7 @@ export default class PBVRenderer {
 
   updateVertexRadius (radius) {
     const radiuses = new Float32Array(_.map(this.kvsml.values, v => {
-      const idx = Math.floor(radius.length * (v - this.kvsml.minValue) / this.kvsml.maxValue);
+      const idx = Math.floor(radius.length * (v - this.kvsml.minValue) / (this.kvsml.maxValue - this.kvsml.minValue));
       return radius[idx];
     }));
     this.geometry.addAttribute('radius', new THREE.BufferAttribute(radiuses, 1));
