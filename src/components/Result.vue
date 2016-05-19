@@ -32,9 +32,9 @@ export default {
       }
     });
 
-    this.$on('updateVertexRadius', () => {
+    this.$on('updateOpacity', () => {
       if(this.$parent.applyImmediately){
-        pbvr.updateVertexRadius(this.$parent.radius);
+        pbvr.updateOpacity(this.$parent.radius);
       }
     });
 

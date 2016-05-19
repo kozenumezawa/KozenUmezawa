@@ -1,6 +1,6 @@
 <template lang="jade">
-.title Particle size
-canvas#radius(width="430" height="200" @mousemove="onMouseMove" @mousedown="onMouseDown"
+.title Opacity
+canvas#opacity(width="430" height="200" @mousemove="onMouseMove" @mousedown="onMouseDown"
               @mouseup="onMouseUp" @mouseleave="onMouseUp")
 </template>
 
@@ -13,31 +13,32 @@ import helper from '../helper';
 let pIndex = -1;
 let isDown = false;
 
-let radiuses = [[0, 180], [215, 100], [430, 20]];
-const getCurvePoints = () => _.chunk(spline.getCurvePoints(_.flatten(radiuses), 0.2, 50, false), 2);
+let opacities = [[0, 180], [215, 100], [430, 20]]; //first position
+
+const getCurvePoints = () => _.chunk(spline.getCurvePoints(_.flatten(opacities), 0.2, 50, false), 2);
 
 export default {
   computed: {
-    radius: () => document.getElementById('radius'),
-    context: () => document.getElementById('radius').getContext('2d'),
+    opacity: () => document.getElementById('opacity'),
+    context: () => document.getElementById('opacity').getContext('2d'),
   },
   ready () {
     this.initGraph();
 
     this.$on('reset', () => {
-      radiuses = [[0, 180], [215, 100], [430, 20]];
+      opacities = [[0, 180], [215, 100], [430, 20]];
       this.initGraph();
-      this.$parent.emit('updateVertexRadius');
+      this.$parent.emit('updateOpacity');
     });
   },
   methods: {
     initGraph () {
-      this.context.clearRect(0, 0, radius.width, radius.height);
+      this.context.clearRect(0, 0, opacity.width, opacity.height);
       this.drawLine();
       this.drawHandles();
 
       // Additional 0.0001 is used to prevent divergence of particle size
-      this.$parent.radius = _.map(getCurvePoints(), pt => 1.00001 - pt[1] / radius.height);
+      this.$parent.radius = _.map(getCurvePoints(), pt => 1.00001 - pt[1] / opacity.height);
     },
     drawLine () {
       const s = getCurvePoints();
@@ -50,8 +51,8 @@ export default {
     drawHandles () {
       this.context.strokeStyle = 'black';
       this.context.beginPath();
-      for(let i=1; i < radiuses.length - 1; i++){
-        this.context.rect(radiuses[i][0] - 3, radiuses[i][1] - 3, 6, 6);
+      for(let i=1; i < opacities.length - 1; i++){
+        this.context.rect(opacities[i][0] - 3, opacities[i][1] - 3, 6, 6);
       }
       this.context.stroke();
     },
@@ -61,8 +62,8 @@ export default {
       pIndex = -1;
       isDown = false;
 
-  		for(let i=0; i < radiuses.length; i++) {
-        if(Math.abs(pos.x - radiuses[i][0]) < 10 && Math.abs(pos.y - radiuses[i][1] < 10)){
+  		for(let i=0; i < opacities.length; i++) {
+        if(Math.abs(pos.x - opacities[i][0]) < 10 && Math.abs(pos.y - opacities[i][1] < 10)){
           pIndex = i;
           isDown = true;
           return;
@@ -74,32 +75,32 @@ export default {
 
       if(!newHandlePos) return;
 
-      radiuses = radiuses.concat([newHandlePos]).sort((a, b) => a[0] - b[0]);
+      opacities = opacities.concat([newHandlePos]).sort((a, b) => a[0] - b[0]);
 
       this.onMouseDown(e);
       this.initGraph();
     },
     onMouseMove (e) {
-      if(!isDown || pIndex === 0 || pIndex === radiuses.length - 1) return;
+      if(!isDown || pIndex === 0 || pIndex === opacities.length - 1) return;
 
       const pos = helper.getClickedPoint(e);
-			radiuses[pIndex] = [pos.x, pos.y];
+			opacities[pIndex] = [pos.x, pos.y];
 
       // Remove the point if its position is overrapped with another point
-      radiuses = _.uniqWith(radiuses.sort((a, b) => a[0] - b[0]), (a, b) => Math.abs(a[0] - b[0]) < 1);
+      opacities = _.uniqWith(opacities.sort((a, b) => a[0] - b[0]), (a, b) => Math.abs(a[0] - b[0]) < 1);
 
       this.initGraph();
     },
     onMouseUp () {
       isDown = false;
-      this.$parent.emit('updateVertexRadius');
+      this.$parent.emit('updateOpacity');
     }
   }
 };
 </script>
 
 <style scoped>
-#radius {
+#opacity {
   border: 1px solid #aaa;
   cursor: crosshair;
 }

@@ -91,7 +91,7 @@ export default class PBVRenderer {
     this.geometry.addAttribute('color', new THREE.BufferAttribute(colors, 4));
   }
 
-  updateVertexRadius (radius) {
+  updateOpacity (radius) {
     const range = radius.length - 1;
     const radiuses = new Float32Array(_.map(this.kvsml.values, v => {
       const idx = Math.floor(range * (v - this.kvsml.minValue) / (this.kvsml.maxValue - this.kvsml.minValue));
@@ -107,7 +107,7 @@ export default class PBVRenderer {
 
   updateAllAttriutes (params) {
     this.updateVertexColors(params.spectrum);
-    this.updateVertexRadius(params.radius);
+    this.updateOpacity(params.radius);
     this.updateOpacityParams(params.alphaZero, params.rZero);
   }
 }
