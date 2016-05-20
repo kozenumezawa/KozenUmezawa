@@ -1,7 +1,6 @@
 <template lang="jade">
 .title Result
 #result
-warning(:show.sync="warningVisible")
 .row
   .column.column-50
     | Number of vertices: <b>{{ numberOfVertices }}</b><br>
@@ -17,14 +16,9 @@ request.defaults.responseType = 'arraybuffer';
 
 import PBVRenderer from '../PBVRenderer';
 
-import Warning from './Warning.vue';
-
 const pbvr = new PBVRenderer(640, 640);
 
 export default {
-  components: {
-    Warning
-  },
   ready () {
     this.$on('updateVertexColors', () => {
       if(this.$parent.applyImmediately){
@@ -59,7 +53,6 @@ export default {
       maxValue: 0,
       framesPerSecond: 0,
       numberOfVertices: 0,
-      warningVisible: false
     }
   },
   methods: {
@@ -70,18 +63,9 @@ export default {
       .then(() => request.get('./assets/kvsml/test_value.dat'))
       .then(res => values = res.data)
       .then(() => { pbvr.chooseSetVertex(new Float32Array(coords), new Float32Array(values))})
-      .then(() => {
-        if(pbvr.getNumberOfVertices() > 1000000){
-          this.warningVisible = true;
-        } else {
-          this.addPointsToScene();
-        }
-      })
+      .then(() => { pbvr.addPointsToScene(); })
       .then(() => pbvr.updateAllAttriutes(this.$parent))
       .then(this.updateStats);
-    },
-    addPointsToScene () {
-      pbvr.addPointsToScene();
     },
     updateStats () {
       this.minValue = Math.floor(pbvr.getMinValue() * 100) / 100;
