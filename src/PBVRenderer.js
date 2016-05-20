@@ -82,9 +82,9 @@ export default class PBVRenderer {
     const N_particle=500000;
     var index = new Array(N_particle);
 
-    for(var i=0; i<N_particle; i++){
-      index[i] = Math.floor(Math.random()*values.length);
-    }
+    index.forEach((element,idx) => {
+      index[idx] = Math.floor(Math.random()*values.length);
+    });
     index = index.sort((a,b) =>{return a-b});
 
     //Choose vertices at random
