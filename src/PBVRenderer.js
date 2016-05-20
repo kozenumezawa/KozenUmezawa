@@ -78,6 +78,11 @@ export default class PBVRenderer {
     this.kvsml.values = values;
   }
 
+  chooseSetVertex(coords, values){
+    this.setVertexCoords(new Float32Array(coords));
+    this.setVertexValues(new Float32Array(values));
+  }
+
   addPointsToScene () {
     this.scene.add(this.points);
   }

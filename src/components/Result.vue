@@ -64,10 +64,12 @@ export default {
   },
   methods: {
     retrieveSampleKvsml () { // TODO: This block should be replaced with OPeNDAP request if needed.
+      var coords, values;
       request.get('./assets/kvsml/test_coord.dat')
-      .then(res => pbvr.setVertexCoords(new Float32Array(res.data)))
+      .then(res => coords = res.data)
       .then(() => request.get('./assets/kvsml/test_value.dat'))
-      .then(res => pbvr.setVertexValues(new Float32Array(res.data)))
+      .then(res => values = res.data)
+      .then(() => { pbvr.chooseSetVertex(coords, values)})
       .then(() => {
         if(pbvr.getNumberOfVertices() > 1000000){
           this.warningVisible = true;

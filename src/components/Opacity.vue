@@ -38,6 +38,7 @@ export default {
       this.drawHandles();
 
       // Additional 0.0001 is used to prevent divergence of particle size
+      // The range of opacity is [0.0, 1.0]
       this.$parent.opacity = _.map(getCurvePoints(), pt => 1.00001 - pt[1] / opacity.height);
     },
     drawLine () {
