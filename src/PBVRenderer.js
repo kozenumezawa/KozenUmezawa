@@ -79,9 +79,25 @@ export default class PBVRenderer {
   }
 
   chooseSetVertex(coords, values){
-    this.setVertexCoords(new Float32Array(coords));
-    this.setVertexValues(new Float32Array(values));
-  }
+    const N_particle=500000;
+    var index = new Array(N_particle);
+
+    for(var i=0; i<N_particle; i++){
+      index[i] = Math.floor(Math.random()*values.length);
+    }
+    index = index.sort((a,b) =>{return a-b});
+
+    //Choose vertices at random
+    index.forEach((element, idx) => {
+      for(var i=0; i<3; i++){
+        coords[idx*3+i] = coords[element*3+i];
+      }
+      values[idx] = values[element];
+    });
+
+    this.setVertexCoords(coords.slice(0, N_particle*3));
+    this.setVertexValues(values.slice(0, N_particle));
+}
 
   addPointsToScene () {
     this.scene.add(this.points);

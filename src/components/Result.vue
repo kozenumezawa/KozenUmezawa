@@ -69,7 +69,7 @@ export default {
       .then(res => coords = res.data)
       .then(() => request.get('./assets/kvsml/test_value.dat'))
       .then(res => values = res.data)
-      .then(() => { pbvr.chooseSetVertex(coords, values)})
+      .then(() => { pbvr.chooseSetVertex(new Float32Array(coords), new Float32Array(values))})
       .then(() => {
         if(pbvr.getNumberOfVertices() > 1000000){
           this.warningVisible = true;
