@@ -2,7 +2,7 @@ import THREE from 'three';
 
 export default {
   vertexShader: [
-    "attribute float radius;",
+    "attribute float alpha;",
 
     "uniform float alphaZero;",
     "uniform float rZero;",
@@ -22,7 +22,7 @@ export default {
     // THREE.ShaderChunk["worldpos_vertex"],
     // THREE.ShaderChunk["shadowmap_vertex"],
 
-    " gl_PointSize = rZero * sqrt( log(1.0 - radius) / log(1.0 - alphaZero) );",
+    " gl_PointSize = rZero * sqrt( log(1.0 - alpha) / log(1.0 - alphaZero) );",
 
     "}"
   ].join("\n"),

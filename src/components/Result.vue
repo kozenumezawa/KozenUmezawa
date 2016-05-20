@@ -34,7 +34,7 @@ export default {
 
     this.$on('updateOpacity', () => {
       if(this.$parent.applyImmediately){
-        pbvr.updateOpacity(this.$parent.radius);
+        pbvr.updateOpacity(this.$parent.opacity);
       }
     });
 

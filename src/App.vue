@@ -5,7 +5,7 @@
       result
     .column.column-40
       color
-      radius
+      opacity
       params
       buttons
   .unsupported(v-if="!supportWebGL")
@@ -22,7 +22,7 @@ import 'milligram';
 
 import Result  from './components/Result.vue';
 import Color   from './components/Color.vue';
-import Radius  from './components/Radius.vue';
+import Opacity  from './components/Opacity.vue';
 import Params  from './components/Params.vue';
 import Buttons from './components/Buttons.vue';
 
@@ -30,14 +30,14 @@ export default {
   components: {
     Result,
     Color,
-    Radius,
+    Opacity,
     Params,
     Buttons
   },
   data () {
     return {
       spectrum: [],
-      radius: [],
+      opacity: [],
       alphaZero: 0.3,
       rZero: 0.9,
       applyImmediately: true
