@@ -4,6 +4,7 @@ import THREE from 'three';
 import Stats from 'stats.js';
 const OrbitControls = require('three-orbit-controls')(THREE);
 
+import EnsembleShader from './EnsembleShader';
 import shader from './shader';
 
 export default class PBVRenderer {
@@ -19,7 +20,7 @@ export default class PBVRenderer {
     this.scene = new THREE.Scene();
 
     this.camera = new THREE.PerspectiveCamera(45, 1, 1, 1000);
-    this.camera.position.x = 80;
+    this.camera.position.z = 70;
 
     this.geometry = new THREE.BufferGeometry();
 
@@ -38,13 +39,36 @@ export default class PBVRenderer {
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
 
     this.kvsml = {values: [], maxValue: 0, minValue: 1, numberOfVertices: 0};
+
+
+    const N_average = 10;
+    //Create RenderTarget to realize ensemble average
+    this.rt = new THREE.WebGLRenderTarget(width, height, {
+      magFilter: THREE.NearestFilter,
+      minFilter: THREE.NearestFilter,
+      wrapS: THREE.RepeatWrapping,
+      wrapT: THREE.RepeatWrapping,
+      anisotropy: this.renderer.getMaxAnisotropy()
+    });
+
+    this.imageGeometry = new THREE.PlaneBufferGeometry(width, height);
+    this.imageShader = new THREE.ShaderMaterial(EnsembleShader);
+    this.imageShader.uniforms['tDiffuse1'].value = this.rt;
+
+    this.imageMesh = new THREE.Mesh(this.imageGeometry, this.imageShader);
+    this.imageScene = new THREE.Scene();
+    this.imageScene.add(this.imageMesh);
+
+    this.imageCamera = new THREE.PerspectiveCamera(45, 1, 250, 350);
+    this.imageCamera.position.z = 300;
   }
 
   animate () {
     requestAnimationFrame(this.animate);
     this.controls.update();
     this.stats.update();
-    this.renderer.render(this.scene, this.camera);
+    this.renderer.render(this.scene, this.camera, this.rt);   //offScreenRendering
+    this.renderer.render(this.imageScene, this.imageCamera);
   }
 
   getMaxValue () {
