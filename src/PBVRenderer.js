@@ -97,6 +97,8 @@ export default class PBVRenderer {
 
     this.setVertexCoords(coords.slice(0, N_particle*3));
     this.setVertexValues(values.slice(0, N_particle));
+    this.addPointsToScene();
+
 }
 
   addPointsToScene () {
@@ -126,7 +128,7 @@ export default class PBVRenderer {
     this.material.uniforms.rZero.value = rZero;
   }
 
-  updateAllAttriutes (params) {
+  updateAllAttributes (params) {
     this.updateVertexColors(params.spectrum);
     this.updateOpacity(params.opacity);
     this.updateOpacityParams(params.alphaZero, params.rZero);

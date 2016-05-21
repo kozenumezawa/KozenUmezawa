@@ -38,8 +38,8 @@ export default {
       }
     });
 
-    this.$on('apply', () => pbvr.updateAllAttriutes(this.$parent));
-    this.$on('reset', () => pbvr.updateAllAttriutes(this.$parent));
+    this.$on('apply', () => pbvr.updateAllAttributes(this.$parent));
+    this.$on('reset', () => pbvr.updateAllAttributes(this.$parent));
 
     document.getElementById('result').appendChild(pbvr.getDomElement());
 
@@ -63,8 +63,7 @@ export default {
       .then(() => request.get('./assets/kvsml/test_value.dat'))
       .then(res => values = res.data)
       .then(() => { pbvr.chooseSetVertex(new Float32Array(coords), new Float32Array(values))})
-      .then(() => { pbvr.addPointsToScene(); })
-      .then(() => pbvr.updateAllAttriutes(this.$parent))
+      .then(() => pbvr.updateAllAttributes(this.$parent))
       .then(this.updateStats);
     },
     updateStats () {
