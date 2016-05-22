@@ -9,6 +9,8 @@ import shader from './shader';
 
 export default class PBVRenderer {
   constructor (width, height) {
+    this.N_ENSEMBLE = 10;
+
     this.animate = this.animate.bind(this);
 
     this.renderer = new THREE.WebGLRenderer({antialias: true});
@@ -16,8 +18,6 @@ export default class PBVRenderer {
     this.renderer.setSize(width, height);
 
     this.stats = new Stats();
-
-    this.scene = new THREE.Scene();
 
     this.camera = new THREE.PerspectiveCamera(45, 1, 1, 1000);
     this.camera.position.z = 70;
@@ -40,20 +40,39 @@ export default class PBVRenderer {
 
     this.kvsml = {values: [], maxValue: 0, minValue: 1, numberOfVertices: 0};
 
+    //prepare scene with the same number of N_ENSEMBLE 
+    this.scene = new Array();
+    for(var i=0; i<this.N_ENSEMBLE; i++){
+      this.scene.push(new THREE.Scene());
+    }
+    
     //Create RenderTarget to realize ensemble average
-    //CAUTION:: We multiply 'width' by 2.5 to improve the image quality but '2.5' is baseless.
-    this.rt = new THREE.WebGLRenderTarget(width*2.5, height*2.5, {
-      magFilter: THREE.NearestFilter,
-      minFilter: THREE.NearestMipMapLinearFilter,
-      wrapS: THREE.RepeatWrapping,
-      warpT: THREE.RepeatWrapping,
-      type:  THREE.FloatType,
-      anisotropy: this.renderer.getMaxAnisotropy()
-    });
-
+    this.rt = new Array();
+    for(var i=0; i<this.N_ENSEMBLE; i++) {
+      //CAUTION:: We multiply 'width' by 2.5 to improve the image quality but '2.5' is a baseless number.
+      this.rt.push(new THREE.WebGLRenderTarget(width * 2.5, height * 2.5, {
+        magFilter: THREE.NearestFilter,
+        minFilter: THREE.NearestFilter,
+        wrapS: THREE.ClampToEdgeWrapping,
+        warpT: THREE.ClampToEdgeWrapping,
+        type: THREE.FloatType,
+        anisotropy: this.renderer.getMaxAnisotropy()
+      }));
+    }
+    
     this.imageGeometry = new THREE.PlaneBufferGeometry(width, height);
     this.imageShader = new THREE.ShaderMaterial(EnsembleShader);
-    this.imageShader.uniforms['tDiffuse1'].value = this.rt;
+
+    this.imageShader.uniforms['tDiffuse1'].value = this.rt[0];
+    this.imageShader.uniforms['tDiffuse2'].value = this.rt[1];
+    this.imageShader.uniforms['tDiffuse3'].value = this.rt[2];
+    this.imageShader.uniforms['tDiffuse4'].value = this.rt[3];
+    this.imageShader.uniforms['tDiffuse5'].value = this.rt[4];
+    this.imageShader.uniforms['tDiffuse6'].value = this.rt[5];
+    this.imageShader.uniforms['tDiffuse7'].value = this.rt[6];
+    this.imageShader.uniforms['tDiffuse8'].value = this.rt[7];
+    this.imageShader.uniforms['tDiffuse9'].value = this.rt[8];
+    this.imageShader.uniforms['tDiffuse10'].value = this.rt[9];
 
     this.imageMesh = new THREE.Mesh(this.imageGeometry, this.imageShader);
     this.imageScene = new THREE.Scene();
@@ -67,9 +86,11 @@ export default class PBVRenderer {
     requestAnimationFrame(this.animate);
     this.controls.update();
     this.stats.update();
-    this.renderer.render(this.scene, this.camera, this.rt);   //offScreenRendering
+
+    this.scene.forEach((element, idx)=>{
+      this.renderer.render(this.scene[idx], this.camera, this.rt[idx]);   //offScreenRendering
+    });
     this.renderer.render(this.imageScene, this.imageCamera);
-    //this.renderer.render(this.scene, this.camera);
   }
 
   getMaxValue () {
@@ -103,39 +124,47 @@ export default class PBVRenderer {
     this.kvsml.values = values;
   }
 
-  chooseSetVertex(coords, values){
-    const N_particle=500000;
-    var index = new Array(N_particle);
+  setRandomVertex(coords, values, params){
+    const N_particle=2000000;
+    this.scene.forEach((element, idx) => {
+      var index = new Array(N_particle);
 
-    index.forEach((element,idx) => {
-      index[idx] = Math.floor(Math.random()*values.length);
+      index.forEach((element,idx) => {
+        index[idx] = Math.floor(Math.random()*values.length);
+      });
+      index = index.sort((a,b) =>{return a-b});
+
+      //Choose vertices at random
+      index.forEach((element, idx) => {
+        for(var i=0; i<3; i++){
+          coords[idx*3+i] = coords[element*3+i];
+        }
+        values[idx] = values[element];
+      });
+
+      this.setVertexCoords(coords.slice(0, N_particle*3));
+      this.setVertexValues(values.slice(0, N_particle));
+      this.addPointsToScene(idx);
+      this.updateAllAttributes(params);
     });
-    index = index.sort((a,b) =>{return a-b});
+  }
 
-    //Choose vertices at random
-    index.forEach((element, idx) => {
-      for(var i=0; i<3; i++){
-        coords[idx*3+i] = coords[element*3+i];
-      }
-      values[idx] = values[element];
-    });
-
-    this.setVertexCoords(coords.slice(0, N_particle*3));
-    this.setVertexValues(values.slice(0, N_particle));
-    this.addPointsToScene();
-
-}
-
-  addPointsToScene () {
-    this.scene.add(this.points);
+  addPointsToScene (index) {
+    this.scene[index].add(this.points);
   }
 
   updateVertexColors (spectrum) {
     const range = spectrum.length - 1;
-    const colors = new Float32Array(_.flatMap(this.kvsml.values, v => {
+    var colors = new Float32Array(_.flatMap(this.kvsml.values, v => {
       const idx = Math.floor(range * (v - this.kvsml.minValue) / (this.kvsml.maxValue - this.kvsml.minValue));
       return spectrum[idx];
     }));
+
+    //Divide colors to realize an Ensemble average.
+    colors.forEach((element,idx) => {
+      if((idx % 4) == 3)
+        colors[idx] /= this.N_ENSEMBLE;
+    });
     this.geometry.addAttribute('color', new THREE.BufferAttribute(colors, 4));
   }
 

@@ -62,8 +62,7 @@ export default {
       .then(res => coords = res.data)
       .then(() => request.get('./assets/kvsml/test_value.dat'))
       .then(res => values = res.data)
-      .then(() => { pbvr.chooseSetVertex(new Float32Array(coords), new Float32Array(values))})
-      .then(() => pbvr.updateAllAttributes(this.$parent))
+      .then(() => { pbvr.setRandomVertex(new Float32Array(coords), new Float32Array(values), this.$parent)})
       .then(this.updateStats);
     },
     updateStats () {
