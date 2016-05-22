@@ -46,8 +46,9 @@ export default class PBVRenderer {
     this.rt = new THREE.WebGLRenderTarget(width, height, {
       magFilter: THREE.NearestFilter,
       minFilter: THREE.NearestFilter,
-      wrapS: THREE.RepeatWrapping,
-      wrapT: THREE.RepeatWrapping,
+      wrapS: THREE.ClampToEdgeWrapping,
+      wrapT: THREE.ClampToEdgeWrapping,
+      type:  THREE.UnsignedByteType,
       anisotropy: this.renderer.getMaxAnisotropy()
     });
 
@@ -59,7 +60,7 @@ export default class PBVRenderer {
     this.imageScene = new THREE.Scene();
     this.imageScene.add(this.imageMesh);
 
-    this.imageCamera = new THREE.PerspectiveCamera(45, 1, 250, 350);
+    this.imageCamera = new THREE.OrthographicCamera(-width/2, width/2, height/2, -height/2, 250, 300);
     this.imageCamera.position.z = 300;
   }
 
@@ -69,6 +70,7 @@ export default class PBVRenderer {
     this.stats.update();
     this.renderer.render(this.scene, this.camera, this.rt);   //offScreenRendering
     this.renderer.render(this.imageScene, this.imageCamera);
+    //this.renderer.render(this.scene, this.camera);
   }
 
   getMaxValue () {
