@@ -9,7 +9,7 @@ import shader from './shader';
 
 export default class PBVRenderer {
   constructor (width, height) {
-    this.N_ENSEMBLE = 10;
+    this.N_ENSEMBLE = 2;
 
     this.animate = this.animate.bind(this);
 
@@ -60,21 +60,13 @@ export default class PBVRenderer {
       }));
     }
     
-    this.imageGeometry = new THREE.PlaneBufferGeometry(width, height);
-    this.imageShader = new THREE.ShaderMaterial(EnsembleShader);
+    this.imageGeometry = new THREE.PlaneBufferGeometry(width, height)
+    this.imageMaterial = new THREE.ShaderMaterial(EnsembleShader);
+    this.imageMaterial.uniforms['tDiffuse1'].value = this.rt[0];
+    this.imageMaterial.uniforms['tDiffuse2'].value = this.rt[1];
+    this.imageMaterial.uniforms['mixRatio'].value = 0.5;
 
-    this.imageShader.uniforms['tDiffuse1'].value = this.rt[0];
-    this.imageShader.uniforms['tDiffuse2'].value = this.rt[1];
-    this.imageShader.uniforms['tDiffuse3'].value = this.rt[2];
-    this.imageShader.uniforms['tDiffuse4'].value = this.rt[3];
-    this.imageShader.uniforms['tDiffuse5'].value = this.rt[4];
-    this.imageShader.uniforms['tDiffuse6'].value = this.rt[5];
-    this.imageShader.uniforms['tDiffuse7'].value = this.rt[6];
-    this.imageShader.uniforms['tDiffuse8'].value = this.rt[7];
-    this.imageShader.uniforms['tDiffuse9'].value = this.rt[8];
-    this.imageShader.uniforms['tDiffuse10'].value = this.rt[9];
-
-    this.imageMesh = new THREE.Mesh(this.imageGeometry, this.imageShader);
+    this.imageMesh = new THREE.Mesh(this.imageGeometry, this.imageMaterial);
     this.imageScene = new THREE.Scene();
     this.imageScene.add(this.imageMesh);
 
@@ -88,7 +80,7 @@ export default class PBVRenderer {
     this.stats.update();
 
     this.scene.forEach((element, idx)=>{
-      this.renderer.render(this.scene[idx], this.camera, this.rt[idx]);   //offScreenRendering
+       this.renderer.render(this.scene[idx], this.camera, this.rt[idx]);   //offScreenRendering
     });
     this.renderer.render(this.imageScene, this.imageCamera);
   }
@@ -125,7 +117,7 @@ export default class PBVRenderer {
   }
 
   setRandomVertex(coords, values, params){
-    const N_particle=2000000;
+    const N_particle = 7000000;
     this.scene.forEach((element, idx) => {
       var index = new Array(N_particle);
 
@@ -159,12 +151,6 @@ export default class PBVRenderer {
       const idx = Math.floor(range * (v - this.kvsml.minValue) / (this.kvsml.maxValue - this.kvsml.minValue));
       return spectrum[idx];
     }));
-
-    //Divide colors to realize an Ensemble average.
-    colors.forEach((element,idx) => {
-      if((idx % 4) == 3)
-        colors[idx] /= this.N_ENSEMBLE;
-    });
     this.geometry.addAttribute('color', new THREE.BufferAttribute(colors, 4));
   }
 
