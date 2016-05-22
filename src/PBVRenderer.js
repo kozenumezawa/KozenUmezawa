@@ -9,7 +9,7 @@ import shader from './shader';
 
 export default class PBVRenderer {
   constructor (width, height) {
-    this.N_ENSEMBLE = 2;
+    this.N_ENSEMBLE = 5;
 
     this.animate = this.animate.bind(this);
 
@@ -48,7 +48,7 @@ export default class PBVRenderer {
     
     //Create RenderTarget to realize ensemble average
     this.rt = new Array();
-    for(var i=0; i<this.N_ENSEMBLE; i++) {
+    for(var i=0; i<3; i++) {
       //CAUTION:: We multiply 'width' by 2.5 to improve the image quality but '2.5' is a baseless number.
       this.rt.push(new THREE.WebGLRenderTarget(width * 2.5, height * 2.5, {
         magFilter: THREE.NearestFilter,
@@ -64,7 +64,6 @@ export default class PBVRenderer {
     this.imageMaterial = new THREE.ShaderMaterial(EnsembleShader);
     this.imageMaterial.uniforms['tDiffuse1'].value = this.rt[0];
     this.imageMaterial.uniforms['tDiffuse2'].value = this.rt[1];
-    this.imageMaterial.uniforms['mixRatio'].value = 0.5;
 
     this.imageMesh = new THREE.Mesh(this.imageGeometry, this.imageMaterial);
     this.imageScene = new THREE.Scene();
@@ -80,6 +79,19 @@ export default class PBVRenderer {
     this.stats.update();
 
     this.scene.forEach((element, idx)=>{
+      switch(idx){
+        case 0:
+          this.renderer.render(this.scene[idx], this.camera, this.rt[0]);
+          break;
+        case 1:
+          this.renderer.render(this.scene[idx], this.camera, this.rt[1]);
+          break;
+        default:
+          this.renderer.render(this.imageScene, this.imageCamera, this.rt[2]);
+          this.rt[0] = this.rt[2];
+          this.renderer.render(this.scene[idx], this.camera, this.rt[1]);
+          break;
+      }
        this.renderer.render(this.scene[idx], this.camera, this.rt[idx]);   //offScreenRendering
     });
     this.renderer.render(this.imageScene, this.imageCamera);
@@ -117,7 +129,7 @@ export default class PBVRenderer {
   }
 
   setRandomVertex(coords, values, params){
-    const N_particle = 7000000;
+    const N_particle = 1000000;
     this.scene.forEach((element, idx) => {
       var index = new Array(N_particle);
 
@@ -151,6 +163,11 @@ export default class PBVRenderer {
       const idx = Math.floor(range * (v - this.kvsml.minValue) / (this.kvsml.maxValue - this.kvsml.minValue));
       return spectrum[idx];
     }));
+
+    colors.forEach((element, idx) => {
+      if((idx % 4) == 3)
+        colors[idx] /= this.N_ENSEMBLE;
+    });
     this.geometry.addAttribute('color', new THREE.BufferAttribute(colors, 4));
   }
 

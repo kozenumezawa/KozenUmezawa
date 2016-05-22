@@ -2,11 +2,9 @@ import THREE from 'three';
 
 export default{
 		uniforms: {
-
 			"tDiffuse1": { type: "t", value: null },
-			"tDiffuse2": { type: "t", value: null },
-			"mixRatio":  { type: "f", value: 0.5 },
-		},
+			"tDiffuse2": { type: "t", value: null }
+    },
 
 		vertexShader: [
 
@@ -22,12 +20,9 @@ export default{
 		].join( "\n" ),
 
 		fragmentShader: [
-
-			"uniform float opacity;",
-			"uniform float mixRatio;",
-
-			"uniform sampler2D tDiffuse1;",
+      "uniform sampler2D tDiffuse1;",
 			"uniform sampler2D tDiffuse2;",
+      "uniform float mixRatio;",
 
 			"varying vec2 vUv;",
 
@@ -35,8 +30,8 @@ export default{
 
 			"vec4 texel1 = texture2D( tDiffuse1, vUv );",
 			"vec4 texel2 = texture2D( tDiffuse2, vUv );",
-      
-			"gl_FragColor = mix( texel1, texel2, mixRatio );",
+
+			"gl_FragColor = texel1 + texel2;",
 
 			"}"
 
