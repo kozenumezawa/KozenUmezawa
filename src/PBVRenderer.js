@@ -40,15 +40,14 @@ export default class PBVRenderer {
 
     this.kvsml = {values: [], maxValue: 0, minValue: 1, numberOfVertices: 0};
 
-
-    const N_average = 10;
     //Create RenderTarget to realize ensemble average
-    this.rt = new THREE.WebGLRenderTarget(width, height, {
+    //CAUTION:: We multiply 'width' by 2.5 to improve the image quality but '2.5' is baseless.
+    this.rt = new THREE.WebGLRenderTarget(width*2.5, height*2.5, {
       magFilter: THREE.NearestFilter,
-      minFilter: THREE.NearestFilter,
-      wrapS: THREE.ClampToEdgeWrapping,
-      wrapT: THREE.ClampToEdgeWrapping,
-      type:  THREE.UnsignedByteType,
+      minFilter: THREE.NearestMipMapLinearFilter,
+      wrapS: THREE.RepeatWrapping,
+      warpT: THREE.RepeatWrapping,
+      type:  THREE.FloatType,
       anisotropy: this.renderer.getMaxAnisotropy()
     });
 
