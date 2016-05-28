@@ -57,13 +57,12 @@ export default class PBVRenderer {
         wrapS: THREE.ClampToEdgeWrapping,
         warpT: THREE.ClampToEdgeWrapping,
         type: THREE.FloatType,
-        anisotropy: this.renderer.getMaxAnisotropy()
+      //  anisotropy: this.renderer.getMaxAnisotropy()
       }));
     }
     
     this.imageGeometry = new THREE.PlaneBufferGeometry(width, height)
     this.imageMaterial = new THREE.ShaderMaterial(EnsembleShader);
-    this.imageMaterial.uniforms['N_INV'].value = 1.0/this.N_ENSEMBLE;
 
     this.imageMesh = new THREE.Mesh(this.imageGeometry, this.imageMaterial);
     this.imageScene = new THREE.Scene();
@@ -78,24 +77,28 @@ export default class PBVRenderer {
     this.controls.update();
     this.stats.update();
 
+    var flag = true;
     this.scene.forEach((element, idx)=>{
       switch(idx){
         case 0:
           this.renderer.render(this.scene[idx], this.camera, this.rt[0]);
           this.imageMaterial.uniforms['tDiffuse1'].value = this.rt[0];
-          if(this.N_ENSEMBLE == 1)
-            this.imageMaterial.uniforms['tDiffuse2'].value = this.rt[0];
-          break;
         case 1:
           this.renderer.render(this.scene[idx], this.camera, this.rt[1]);
           this.imageMaterial.uniforms['tDiffuse2'].value = this.rt[1];
           break;
         default:
-          this.renderer.render(this.imageScene, this.imageCamera, this.rt[2]);
-          this.rt[0] = this.rt[2];
-          this.imageMaterial.uniforms['tDiffuse1'].value = this.rt[0];
+          var tmp = this.imageScene;
+          if(flag) {
+            this.renderer.render(tmp, this.imageCamera, this.rt[2]);
+            this.imageMaterial.uniforms['tDiffuse1'].value = this.rt[2];
+          }else{
+            this.renderer.render(tmp, this.imageCamera, this.rt[0]);
+            this.imageMaterial.uniforms['tDiffuse1'].value = this.rt[0];
+          }
           this.renderer.render(this.scene[idx], this.camera, this.rt[1]);
           this.imageMaterial.uniforms['tDiffuse2'].value = this.rt[1];
+          flag = !flag;
           break;
       }
     });
