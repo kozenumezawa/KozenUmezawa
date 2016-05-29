@@ -63,6 +63,7 @@ export default class PBVRenderer {
     
     this.imageGeometry = new THREE.PlaneBufferGeometry(width, height)
     this.imageMaterial = new THREE.ShaderMaterial(EnsembleShader);
+    this.imageMaterial.uniforms['N_INV'].value = 1.0/this.N_ENSEMBLE;
 
     this.imageMesh = new THREE.Mesh(this.imageGeometry, this.imageMaterial);
     this.imageScene = new THREE.Scene();
@@ -79,6 +80,7 @@ export default class PBVRenderer {
 
     var flag = true;
     this.scene.forEach((element, idx)=>{
+      this.imageMaterial.uniforms['index'].value = idx;
       switch(idx){
         case 0:
           this.renderer.render(this.scene[idx], this.camera, this.rt[0]);
