@@ -39,7 +39,6 @@ export default class PBVRenderer {
         fragmentShader: shader.fragmentShader
       })));
       this.points.push(new THREE.Points(this.geometry[i], this.material[i]));
-
       this.scene.push(new THREE.Scene());
     }
 
@@ -80,12 +79,13 @@ export default class PBVRenderer {
 
     var flag = true;
     this.scene.forEach((element, idx)=>{
-      this.imageMaterial.uniforms['index'].value = idx;
       switch(idx){
         case 0:
+          this.imageMaterial.uniforms['index'].value = idx;
           this.renderer.render(this.scene[idx], this.camera, this.rt[0]);
           this.imageMaterial.uniforms['tDiffuse1'].value = this.rt[0];
         case 1:
+          this.imageMaterial.uniforms['index'].value = idx;
           this.renderer.render(this.scene[idx], this.camera, this.rt[1]);
           this.imageMaterial.uniforms['tDiffuse2'].value = this.rt[1];
           break;
@@ -100,6 +100,7 @@ export default class PBVRenderer {
           }
           this.renderer.render(this.scene[idx], this.camera, this.rt[1]);
           this.imageMaterial.uniforms['tDiffuse2'].value = this.rt[1];
+          this.imageMaterial.uniforms['index'].value = idx;
           flag = !flag;
           break;
       }
