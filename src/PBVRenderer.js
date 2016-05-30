@@ -4,21 +4,21 @@ import THREE from 'three';
 import Stats from 'stats.js';
 const OrbitControls = require('three-orbit-controls')(THREE);
 
-import EnsembleShader from './EnsembleShader';
 import shader from './shader';
-import './CopyShader';
 
 import getEffectComposer from 'three-effectcomposer';
 const EffectComposer = getEffectComposer(THREE);
+import EnsembleAveragePass from 'three-ensemble-average-pass';
 
 export default class PBVRenderer {
   constructor (width, height) {
-    this.N_ENSEMBLE = 2;
+    this.N_ENSEMBLE = 3;
 
     this.animate = this.animate.bind(this);
 
     this.renderer = new THREE.WebGLRenderer({antialias: true});
-    this.renderer.setPixelRatio(window.devicePixelRatio ? window.devicePixelRatio : 1);
+    var PixelRatio = window.devicePixelRatio;
+    this.renderer.setPixelRatio(PixelRatio ? PixelRatio : 1);
     this.renderer.setSize(width, height);
 
     this.stats = new Stats();
@@ -51,20 +51,28 @@ export default class PBVRenderer {
     this.kvsml = {values: [], maxValue: 0, minValue: 1, numberOfVertices: 0};
 
     //Add EffectComposer to ralize a Postprocess
-    this.composer = new EffectComposer(this.renderer, new THREE.WebGLRenderTarget(width, height, {
-      magFilter: THREE.NearestFilter,
-      minFilter: THREE.NearestFilter,
+    this.composer = new EffectComposer(this.renderer, new THREE.WebGLRenderTarget(window.innerWidth, window.innerHeight*PixelRatio, {
+      magFilter: THREE.LinearFilter,
+      minFilter: THREE.LinearFilter,
       wrapS: THREE.ClampToEdgeWrapping,
       warpT: THREE.ClampToEdgeWrapping,
       type: THREE.FloatType,
-      anisotropy: this.renderer.getMaxAnisotropy()
+      format: THREE.RGBAFormat,
+      anisotropy: this.renderer.getMaxAnisotropy(),
+      stencilBuffer: false
     }));
-    this.composer.addPass( new EffectComposer.RenderPass(this.scene[0], this.camera));
-
-    var effect = new EffectComposer.ShaderPass(THREE.CopyShader);
-    effect.renderToScreen = true;
-    this.composer.addPass(effect);
-
+    this.composer.addPass(new EffectComposer.ShaderPass({
+      vertexShader: `
+       void main() {
+         gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+       }
+      `,
+      fragmentShader: `
+        void main() {
+          gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0);
+        }
+      `
+      }));
   }
 
   animate () {
@@ -72,6 +80,12 @@ export default class PBVRenderer {
     this.controls.update();
     this.stats.update();
 
+    this.scene.forEach((element,idx) => {
+      const effect = new EnsembleAveragePass(this.scene[idx], this.camera, this.N_ENSEMBLE);
+      if(idx == this.N_ENSEMBLE - 1)
+        effect.renderToScreen = true;
+      this.composer.addPass(effect);
+    });
     //this.renderer.render(this.scene[0], this.camera);
     this.composer.render();
   }
