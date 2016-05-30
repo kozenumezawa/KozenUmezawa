@@ -6,6 +6,10 @@ const OrbitControls = require('three-orbit-controls')(THREE);
 
 import EnsembleShader from './EnsembleShader';
 import shader from './shader';
+import './CopyShader';
+
+import getEffectComposer from 'three-effectcomposer';
+const EffectComposer = getEffectComposer(THREE);
 
 export default class PBVRenderer {
   constructor (width, height) {
@@ -45,31 +49,22 @@ export default class PBVRenderer {
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
 
     this.kvsml = {values: [], maxValue: 0, minValue: 1, numberOfVertices: 0};
-    
-    //Create RenderTarget to realize ensemble average
-    this.rt = new Array();
-    for(var i=0; i<3; i++) {
-      //CAUTION:: We multiply 'width' by 2.5 to improve the image quality but '2.5' is a baseless number.
-      this.rt.push(new THREE.WebGLRenderTarget(width * 2.5, height * 2.5, {
-        magFilter: THREE.NearestFilter,
-        minFilter: THREE.NearestFilter,
-        wrapS: THREE.ClampToEdgeWrapping,
-        warpT: THREE.ClampToEdgeWrapping,
-        type: THREE.FloatType,
-      //  anisotropy: this.renderer.getMaxAnisotropy()
-      }));
-    }
-    
-    this.imageGeometry = new THREE.PlaneBufferGeometry(width, height)
-    this.imageMaterial = new THREE.ShaderMaterial(EnsembleShader);
-    this.imageMaterial.uniforms['N_INV'].value = 1.0/this.N_ENSEMBLE;
 
-    this.imageMesh = new THREE.Mesh(this.imageGeometry, this.imageMaterial);
-    this.imageScene = new THREE.Scene();
-    this.imageScene.add(this.imageMesh);
+    //Add EffectComposer to ralize a Postprocess
+    this.composer = new EffectComposer(this.renderer, new THREE.WebGLRenderTarget(width, height, {
+      magFilter: THREE.NearestFilter,
+      minFilter: THREE.NearestFilter,
+      wrapS: THREE.ClampToEdgeWrapping,
+      warpT: THREE.ClampToEdgeWrapping,
+      type: THREE.FloatType,
+      anisotropy: this.renderer.getMaxAnisotropy()
+    }));
+    this.composer.addPass( new EffectComposer.RenderPass(this.scene[0], this.camera));
 
-    this.imageCamera = new THREE.OrthographicCamera(-width/2, width/2, height/2, -height/2, 250, 300);
-    this.imageCamera.position.z = 300;
+    var effect = new EffectComposer.ShaderPass(THREE.CopyShader);
+    effect.renderToScreen = true;
+    this.composer.addPass(effect);
+
   }
 
   animate () {
@@ -77,36 +72,8 @@ export default class PBVRenderer {
     this.controls.update();
     this.stats.update();
 
-    var flag = true;
-    this.scene.forEach((element, idx)=>{
-      switch(idx){
-        case 0:
-          this.imageMaterial.uniforms['index'].value = idx;
-          this.renderer.render(this.scene[idx], this.camera, this.rt[0]);
-          this.imageMaterial.uniforms['tDiffuse1'].value = this.rt[0];
-        case 1:
-          this.imageMaterial.uniforms['index'].value = idx;
-          this.renderer.render(this.scene[idx], this.camera, this.rt[1]);
-          this.imageMaterial.uniforms['tDiffuse2'].value = this.rt[1];
-          break;
-        default:
-          var tmp = this.imageScene;
-          if(flag) {
-            this.renderer.render(tmp, this.imageCamera, this.rt[2]);
-            this.imageMaterial.uniforms['tDiffuse1'].value = this.rt[2];
-          }else{
-            this.renderer.render(tmp, this.imageCamera, this.rt[0]);
-            this.imageMaterial.uniforms['tDiffuse1'].value = this.rt[0];
-          }
-          this.renderer.render(this.scene[idx], this.camera, this.rt[1]);
-          this.imageMaterial.uniforms['tDiffuse2'].value = this.rt[1];
-          this.imageMaterial.uniforms['index'].value = idx;
-          flag = !flag;
-          break;
-      }
-    });
-
-    this.renderer.render(this.imageScene, this.imageCamera);
+    //this.renderer.render(this.scene[0], this.camera);
+    this.composer.render();
   }
 
   getMaxValue () {
