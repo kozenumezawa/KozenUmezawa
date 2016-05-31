@@ -12,13 +12,13 @@ import EnsembleAveragePass from 'three-ensemble-average-pass';
 
 export default class PBVRenderer {
   constructor (width, height) {
-    this.N_ENSEMBLE = 10;
+    this.N_ENSEMBLE = 1;
 
     this.animate = this.animate.bind(this);
 
-    this.renderer = new THREE.WebGLRenderer({antialias: true});
-    var PixelRatio = window.devicePixelRatio;
-    this.renderer.setPixelRatio(PixelRatio ? PixelRatio : 1);
+    this.renderer = new THREE.WebGLRenderer();
+    const PixelRatio = window.devicePixelRatio ? window.devicePixelRatio : 1;
+    this.renderer.setPixelRatio(PixelRatio);
     this.renderer.setSize(width, height);
 
     this.stats = new Stats();
@@ -51,12 +51,12 @@ export default class PBVRenderer {
     this.kvsml = {values: [], maxValue: 0, minValue: 1, numberOfVertices: 0};
 
     //Add EffectComposer to ralize a Postprocess
-    this.composer = new EffectComposer(this.renderer, new THREE.WebGLRenderTarget(window.innerWidth, window.innerHeight*PixelRatio, {
+    this.composer = new EffectComposer(this.renderer, new THREE.WebGLRenderTarget(width*PixelRatio, height*PixelRatio, {
       magFilter: THREE.LinearFilter,
       minFilter: THREE.LinearFilter,
       wrapS: THREE.ClampToEdgeWrapping,
       warpT: THREE.ClampToEdgeWrapping,
-      type: THREE.FloatType,
+      type: THREE.UnsignedByteType,
       format: THREE.RGBAFormat,
       anisotropy: this.renderer.getMaxAnisotropy(),
       stencilBuffer: false
@@ -85,8 +85,6 @@ export default class PBVRenderer {
     requestAnimationFrame(this.animate);
     this.controls.update();
     this.stats.update();
-
-    //this.renderer.render(this.scene[0], this.camera);
     this.composer.render();
   }
 
