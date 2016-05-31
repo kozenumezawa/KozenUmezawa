@@ -12,7 +12,7 @@ import EnsembleAveragePass from 'three-ensemble-average-pass';
 
 export default class PBVRenderer {
   constructor (width, height) {
-    this.N_ENSEMBLE = 3;
+    this.N_ENSEMBLE = 10;
 
     this.animate = this.animate.bind(this);
 
@@ -73,6 +73,12 @@ export default class PBVRenderer {
         }
       `
       }));
+    this.scene.forEach((element,idx) => {
+      const effect = new EnsembleAveragePass(this.scene[idx], this.camera, this.N_ENSEMBLE);
+      if(idx == this.N_ENSEMBLE - 1)
+        effect.renderToScreen = true;
+      this.composer.addPass(effect);
+    });
   }
 
   animate () {
@@ -80,12 +86,6 @@ export default class PBVRenderer {
     this.controls.update();
     this.stats.update();
 
-    this.scene.forEach((element,idx) => {
-      const effect = new EnsembleAveragePass(this.scene[idx], this.camera, this.N_ENSEMBLE);
-      if(idx == this.N_ENSEMBLE - 1)
-        effect.renderToScreen = true;
-      this.composer.addPass(effect);
-    });
     //this.renderer.render(this.scene[0], this.camera);
     this.composer.render();
   }
@@ -122,7 +122,7 @@ export default class PBVRenderer {
   }
 
   setRandomVertex(coords, values, params){
-    const N_particle = 300000;
+    const N_particle = 1500000;
     this.scene.forEach((element, idx) => {
       var index = new Array(N_particle);
 
