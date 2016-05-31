@@ -5,14 +5,13 @@ import Stats from 'stats.js';
 const OrbitControls = require('three-orbit-controls')(THREE);
 
 import shader from './shader';
-
 import getEffectComposer from 'three-effectcomposer';
 const EffectComposer = getEffectComposer(THREE);
 import EnsembleAveragePass from 'three-ensemble-average-pass';
 
 export default class PBVRenderer {
   constructor (width, height) {
-    this.N_ENSEMBLE = 1;
+    this.N_ENSEMBLE = 3;
 
     this.animate = this.animate.bind(this);
 
@@ -120,7 +119,7 @@ export default class PBVRenderer {
   }
 
   setRandomVertex(coords, values, params){
-    const N_particle = 1000000;
+    const N_particle = 500000;
     this.scene.forEach((element, idx) => {
       var index = new Array(N_particle);
       index.fill(0);
@@ -179,5 +178,40 @@ export default class PBVRenderer {
     this.updateVertexColors(params.spectrum, idx);
     this.updateOpacity(params.opacity, idx);
     this.updateOpacityParams(params.alphaZero, params.rZero, idx);
+  }
+
+  updateAllVertexColors (spectrum) {
+    const range = spectrum.length - 1;
+    this.scene.forEach((element, idx) => {
+      var colors = new Float32Array(_.flatMap(this.kvsml.values, v => {
+        const idx = Math.floor(range * (v - this.kvsml.minValue) / (this.kvsml.maxValue - this.kvsml.minValue));
+        return spectrum[idx];
+      }));
+      this.geometry[idx].addAttribute('color', new THREE.BufferAttribute(colors, 4));
+    });
+  }
+
+  updateAllOpacity (opacity, idx) {
+    const range = opacity.length - 1;
+    this.scene.forEach((element, idx) => {
+      const opacities = new Float32Array(_.map(this.kvsml.values, v => {
+        const idx = Math.floor(range * (v - this.kvsml.minValue) / (this.kvsml.maxValue - this.kvsml.minValue));
+        return opacity[idx];
+      }));
+      this.geometry[idx].addAttribute('alpha', new THREE.BufferAttribute(opacities, 1));
+    });
+  }
+
+  updateAllOpacityParams (alphaZero, rZero) {
+    this.scene.forEach((element, idx) => {
+      this.material[idx].uniforms.alphaZero.value = alphaZero;
+      this.material[idx].uniforms.rZero.value = rZero;
+    });
+  }
+
+  updateAllParticles (params) {
+    this.updateAllVertexColors(params.spectrum);
+    this.updateAllOpacity(params.opacity);
+    this.updateAllOpacityParams(params.alphaZero, params.rZero);
   }
 }

@@ -22,24 +22,24 @@ export default {
   ready () {
     this.$on('updateVertexColors', () => {
       if(this.$parent.applyImmediately){
-        pbvr.updateVertexColors(this.$parent.spectrum);
+        pbvr.updateAllVertexColors(this.$parent.spectrum);
       }
     });
 
     this.$on('updateOpacity', () => {
       if(this.$parent.applyImmediately){
-        pbvr.updateOpacity(this.$parent.opacity);
+        pbvr.updateAllOpacity(this.$parent.opacity);
       }
     });
 
     this.$on('updateOpacityParams', () => {
       if(this.$parent.applyImmediately){
-        pbvr.updateOpacityParams(this.$parent.alphaZero, this.$parent.rZero);
+        pbvr.updateAllOpacityParams(this.$parent.alphaZero, this.$parent.rZero);
       }
     });
 
-    this.$on('apply', () => pbvr.updateAllAttributes(this.$parent));
-    this.$on('reset', () => pbvr.updateAllAttributes(this.$parent));
+    this.$on('apply', () => pbvr.updateAllParticles(this.$parent));
+    this.$on('reset', () => pbvr.updateAllParticles(this.$parent));
 
     document.getElementById('result').appendChild(pbvr.getDomElement());
 
