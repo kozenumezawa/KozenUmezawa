@@ -31,7 +31,7 @@ export default class PBVRenderer {
     this.material = new Array();
     this.points = new Array();
     this.scene = new Array();
-    for(var i=0; i<this.N_ENSEMBLE; i++){
+    for(let i=0; i<this.N_ENSEMBLE; i++){
       this.geometry.push(new THREE.BufferGeometry());
       this.material.push(new THREE.ShaderMaterial(_.assign(THREE.ShaderLib['points'], {
         uniforms: {
@@ -146,7 +146,7 @@ export default class PBVRenderer {
       var tmpvalues = new Float32Array(this.N_particle);
       //Choose vertices at random
       index.forEach((element, id) => {
-        for(var i=0; i<3; i++){
+        for(let i=0; i<3; i++){
           tmpcoords[id*3+i] = coords[element*3+i];
         }
         tmpvalues[id] = values[element];
