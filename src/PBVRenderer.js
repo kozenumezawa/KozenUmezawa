@@ -118,7 +118,7 @@ export default class PBVRenderer {
     this.kvsml.values = values;
   }
 
-  setRandomVertex(coords, values, params){
+  setRandomVertex(x, y, z, values, params){
     const N_particle = 500000;
     this.scene.forEach((element, idx) => {
       var index = new Array(N_particle);
@@ -133,10 +133,10 @@ export default class PBVRenderer {
       var tmpvalues = new Float32Array(N_particle);
       //Choose vertices at random
       index.forEach((element, id) => {
-        for(var i=0; i<3; i++){
-          tmpcoords[id*3+i] = coords[element*3+i];
-        }
-        tmpvalues[id] = values[element];
+        tmpcoords[id * 3] = x[element]
+        tmpcoords[id * 3 + 1] = y[element]
+        tmpcoords[id * 3 + 2] = z[element]
+        tmpvalues[id] = values[element]
       });
 
       this.setVertexCoords(tmpcoords, idx);
