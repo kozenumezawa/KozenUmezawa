@@ -12,6 +12,7 @@ import EnsembleAveragePass from 'three-ensemble-average-pass';
 export default class PBVRenderer {
   constructor (width, height) {
     this.N_ENSEMBLE = 3;
+    this.N_particle = 500000;
 
     this.animate = this.animate.bind(this);
 
@@ -47,7 +48,12 @@ export default class PBVRenderer {
 
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
 
-    this.kvsml = {values: [], maxValue: 0, minValue: 1, numberOfVertices: 0};
+    //prepare kvsml with the same numver of N_ENSEMBLE
+    this.kvsml = new Array();
+    for(let i=0; i<this.N_ENSEMBLE; i++){
+      this.kvsml.push({values: [], maxValue: 0, minValue: 1});
+    }
+
 
     //Add EffectComposer to ralize a Postprocess
     this.composer = new EffectComposer(this.renderer, new THREE.WebGLRenderTarget(width*PixelRatio, height*PixelRatio, {
@@ -88,15 +94,23 @@ export default class PBVRenderer {
   }
 
   getMaxValue () {
-    return this.kvsml.maxValue;
+    var maxValueArray = new Array(this.N_ENSEMBLE);
+    for(let i=0; i<this.N_ENSEMBLE; i++){
+      maxValueArray[i] = this.kvsml.maxValue[i];
+    }
+    return _.max(maxValueArray);
   }
 
   getMinValue () {
-    return this.kvsml.minValue;
+    var minValueArray = new Array(this.N_ENSEMBLE);
+    for(let i=0; i<this.N_ENSEMBLE; i++){
+      minValueArray[i] = this.kvsml.minValue[i];
+    }
+    return _.min(minValueArray);
   }
 
   getNumberOfVertices () {
-    return this.kvsml.numberOfVertices;
+    return this.N_particle;
   }
 
   getFramesPerSecond () {
@@ -108,20 +122,19 @@ export default class PBVRenderer {
   }
 
   setVertexCoords (coords, idx) {
-    this.kvsml.numberOfVertices = coords.length / 3;
+    this.kvsml[idx].numberOfVertices = coords.length / 3;
     this.geometry[idx].addAttribute('position', new THREE.BufferAttribute(coords, 3));
   }
 
-  setVertexValues (values) {
-    this.kvsml.maxValue = _.max(values);
-    this.kvsml.minValue = _.min(values);
-    this.kvsml.values = values;
+  setVertexValues (values, idx) {
+    this.kvsml[idx].maxValue = _.max(values);
+    this.kvsml[idx].minValue = _.min(values);
+    this.kvsml[idx].values = values;
   }
 
   setRandomVertex(coords, values, params){
-    const N_particle = 500000;
     this.scene.forEach((element, idx) => {
-      var index = new Array(N_particle);
+      var index = new Array(this.N_particle);
       index.fill(0);
 
       index.forEach((element,id) => {
@@ -129,8 +142,8 @@ export default class PBVRenderer {
       });
       index = index.sort((a,b) =>{return a-b});
 
-      var tmpcoords = new Float32Array(N_particle*3);
-      var tmpvalues = new Float32Array(N_particle);
+      var tmpcoords = new Float32Array(this.N_particle*3);
+      var tmpvalues = new Float32Array(this.N_particle);
       //Choose vertices at random
       index.forEach((element, id) => {
         for(var i=0; i<3; i++){
@@ -140,7 +153,7 @@ export default class PBVRenderer {
       });
 
       this.setVertexCoords(tmpcoords, idx);
-      this.setVertexValues(tmpvalues);
+      this.setVertexValues(tmpvalues, idx);
       this.addPointsToScene(idx);
       this.updateAllAttributes(params, idx);
     });
@@ -152,9 +165,9 @@ export default class PBVRenderer {
 
   updateVertexColors (spectrum, idx) {
     const range = spectrum.length - 1;
-    var colors = new Float32Array(_.flatMap(this.kvsml.values, v => {
-      const idx = Math.floor(range * (v - this.kvsml.minValue) / (this.kvsml.maxValue - this.kvsml.minValue));
-      return spectrum[idx];
+    var colors = new Float32Array(_.flatMap(this.kvsml[idx].values, v => {
+      const index = Math.floor(range * (v - this.kvsml[idx].minValue) / (this.kvsml[idx].maxValue - this.kvsml[idx].minValue));
+      return spectrum[index];
     }));
 
     this.geometry[idx].addAttribute('color', new THREE.BufferAttribute(colors, 4));
@@ -162,9 +175,9 @@ export default class PBVRenderer {
 
   updateOpacity (opacity, idx) {
     const range = opacity.length - 1;
-    const opacities = new Float32Array(_.map(this.kvsml.values, v => {
-      const idx = Math.floor(range * (v - this.kvsml.minValue) / (this.kvsml.maxValue - this.kvsml.minValue));
-      return opacity[idx];
+    const opacities = new Float32Array(_.map(this.kvsml[idx].values, v => {
+      const index = Math.floor(range * (v - this.kvsml[idx].minValue) / (this.kvsml[idx].maxValue - this.kvsml[idx].minValue));
+      return opacity[index];
     }));
     this.geometry[idx].addAttribute('alpha', new THREE.BufferAttribute(opacities, 1));
   }
@@ -183,35 +196,35 @@ export default class PBVRenderer {
   updateAllVertexColors (spectrum) {
     const range = spectrum.length - 1;
     this.scene.forEach((element, idx) => {
-      var colors = new Float32Array(_.flatMap(this.kvsml.values, v => {
-        const idx = Math.floor(range * (v - this.kvsml.minValue) / (this.kvsml.maxValue - this.kvsml.minValue));
-        return spectrum[idx];
+      var colors = new Float32Array(_.flatMap(this.kvsml[idx].values, v => {
+        const index = Math.floor(range * (v - this.kvsml[idx].minValue) / (this.kvsml[idx].maxValue - this.kvsml[idx].minValue));
+        return spectrum[index];
       }));
       this.geometry[idx].addAttribute('color', new THREE.BufferAttribute(colors, 4));
     });
   }
 
-  updateAllOpacity (opacity, idx) {
+  updateAllOpacity (opacity) {
     const range = opacity.length - 1;
     this.scene.forEach((element, idx) => {
-      const opacities = new Float32Array(_.map(this.kvsml.values, v => {
-        const idx = Math.floor(range * (v - this.kvsml.minValue) / (this.kvsml.maxValue - this.kvsml.minValue));
-        return opacity[idx];
+      const opacities = new Float32Array(_.map(this.kvsml[idx].values, v => {
+        const index = Math.floor(range * (v - this.kvsml[idx].minValue) / (this.kvsml[idx].maxValue - this.kvsml[idx].minValue));
+        return opacity[index];
       }));
       this.geometry[idx].addAttribute('alpha', new THREE.BufferAttribute(opacities, 1));
     });
   }
 
   updateAllOpacityParams (alphaZero, rZero) {
-    this.scene.forEach((element, idx) => {
-      this.material[idx].uniforms.alphaZero.value = alphaZero;
-      this.material[idx].uniforms.rZero.value = rZero;
+    this.scene.forEach((element, index) => {
+      this.material[index].uniforms.alphaZero.value = alphaZero;
+      this.material[index].uniforms.rZero.value = rZero;
     });
   }
 
   updateAllParticles (params) {
     this.updateAllVertexColors(params.spectrum);
-    this.updateAllOpacity(params.opacity);
-    this.updateAllOpacityParams(params.alphaZero, params.rZero);
+     this.updateAllOpacity(params.opacity);
+     this.updateAllOpacityParams(params.alphaZero, params.rZero);
   }
 }
