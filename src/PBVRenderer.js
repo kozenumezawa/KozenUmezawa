@@ -96,7 +96,7 @@ export default class PBVRenderer {
   getMaxValue () {
     var maxValueArray = new Array(this.N_ENSEMBLE);
     for(let i=0; i<this.N_ENSEMBLE; i++){
-      maxValueArray[i] = this.kvsml.maxValue[i];
+      maxValueArray[i] = this.kvsml[i].maxValue;
     }
     return _.max(maxValueArray);
   }
@@ -104,7 +104,7 @@ export default class PBVRenderer {
   getMinValue () {
     var minValueArray = new Array(this.N_ENSEMBLE);
     for(let i=0; i<this.N_ENSEMBLE; i++){
-      minValueArray[i] = this.kvsml.minValue[i];
+      minValueArray[i] = this.kvsml[i].minValue;
     }
     return _.min(minValueArray);
   }
