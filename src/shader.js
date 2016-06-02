@@ -9,20 +9,15 @@ export default {
 
     THREE.ShaderChunk["common"],
     THREE.ShaderChunk["color_pars_vertex"],
-    // THREE.ShaderChunk["shadowmap_pars_vertex"],
-    // THREE.ShaderChunk["logdepthbuf_pars_vertex"],
 
     "void main() {",
+      "vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);",
+    //THREE.ShaderChunk["begin_vertex"],
+      "vColor.xyz = color.xyz;",
 
-    THREE.ShaderChunk["color_vertex"],
-    THREE.ShaderChunk["begin_vertex"],
-    THREE.ShaderChunk["project_vertex"],
 
-    // THREE.ShaderChunk["logdepthbuf_vertex"],
-    // THREE.ShaderChunk["worldpos_vertex"],
-    // THREE.ShaderChunk["shadowmap_vertex"],
-
-    " gl_PointSize = rZero * sqrt( log(1.0 - alpha) / log(1.0 - alphaZero) );",
+      "gl_PointSize = rZero * sqrt( log(1.0 - alpha) / log(1.0 - alphaZero) ) * (100.0 / length(mvPosition.xyz));",
+      "gl_Position = projectionMatrix * mvPosition;",
 
     "}"
   ].join("\n"),
