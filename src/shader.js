@@ -8,7 +8,7 @@ export default {
     "uniform float rZero;",
 
     THREE.ShaderChunk["common"],
-    THREE.ShaderChunk["color_pars_vertex"],
+    "varying vec3 vColor;",
 
     "void main() {",
       "vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);",
@@ -23,12 +23,8 @@ export default {
 
   fragmentShader: [
     THREE.ShaderChunk["common"],
-    THREE.ShaderChunk["color_pars_fragment"],
-    // THREE.ShaderChunk["map_particle_pars_fragment"],
-    // THREE.ShaderChunk["fog_pars_fragment"],
-    // THREE.ShaderChunk["shadowmap_pars_fragment"],
-    // THREE.ShaderChunk["logdepthbuf_pars_fragment"],
 
+    "varying vec3 vColor;",
     "void main() {",
     "  vec3 n;",
     "  n.xy = gl_PointCoord * 2.0 - 1.0;",
@@ -36,13 +32,7 @@ export default {
     "  if ( n.z < 0.0 ) discard;",
 
     "  vec4 diffuseColor = vec4(1.0, 1.0, 1.0, 1.0);",
-
-    // THREE.ShaderChunk["logdepthbuf_fragment"],
-    // THREE.ShaderChunk["map_particle_fragment"],
-    THREE.ShaderChunk["color_fragment"],
-    // THREE.ShaderChunk["alphatest_fragment"],
-    // THREE.ShaderChunk["fog_fragment"],
-
+    "  diffuseColor.rgb *= vColor;",
     "  gl_FragColor = diffuseColor;",
 
     "}"
