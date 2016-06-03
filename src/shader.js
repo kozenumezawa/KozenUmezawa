@@ -12,11 +12,10 @@ export default {
 
     "void main() {",
       "vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);",
-    //THREE.ShaderChunk["begin_vertex"],
       "vColor.xyz = color.xyz;",
 
+      "gl_PointSize = rZero * sqrt( log(1.0 - alpha) / log(1.0 - alphaZero) ) * (100.0 / -mvPosition.z);",
 
-      "gl_PointSize = rZero * sqrt( log(1.0 - alpha) / log(1.0 - alphaZero) ) * (100.0 / length(mvPosition.xyz));",
       "gl_Position = projectionMatrix * mvPosition;",
 
     "}"
