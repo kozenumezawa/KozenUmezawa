@@ -58,7 +58,9 @@ export default {
   },
   methods: {
     retrieveSampleKvsml () {
-      vdap.loadData('http://133.3.250.177/thredds/dodsC/pbr/test.nc.dods?x,y,z,value', {credentials: 'include'})
+      const password = prompt('password?')
+      const hash = btoa(`vizlab:${password}`)
+      vdap.loadData('http://133.3.250.177/thredds/dodsC/pbr/test.nc.dods?x,y,z,value', {headers: {Authorization: `Basic ${hash}`}})
         .then((data) => {
           pbvr.setRandomVertex(data[0], data[1], data[2], data[3], this.$parent)
           this.updateStats()
