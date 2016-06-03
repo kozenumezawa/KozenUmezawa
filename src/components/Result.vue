@@ -58,7 +58,7 @@ export default {
   },
   methods: {
     retrieveSampleKvsml () {
-      vdap.loadData('./assets/test.nc.dods')
+      vdap.loadData('http://133.3.250.177/thredds/dodsC/pbr/test.nc.dods?x,y,z,value', {credentials: 'include'})
         .then((data) => {
           pbvr.setRandomVertex(data[0], data[1], data[2], data[3], this.$parent)
           this.updateStats()
