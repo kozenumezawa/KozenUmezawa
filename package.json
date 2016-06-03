@@ -11,7 +11,7 @@
     "three": "^0.77.1",
     "three-effectcomposer": "^0.0.1",
     "three-ensemble-average-pass": "0.0.0",
-    "vdap": "^0.1.1",
+    "vdap": "^0.1.2",
     "vue": "^1.0.19"
   },
   "devDependencies": {
