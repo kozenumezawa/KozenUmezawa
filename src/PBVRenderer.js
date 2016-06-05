@@ -36,7 +36,11 @@ export default class PBVRenderer {
       this.material.push(new THREE.ShaderMaterial(_.assign(THREE.ShaderLib['points'], {
         uniforms: {
           alphaZero: {type: 'f', value: 0.3},
-          rZero: {type: 'f', value: 0.9}
+          rZero: {type: 'f', value: 0.9},
+          maxValue: {type: 'f', value: 1},
+          minValue: {type: 'f', value: 0.001},
+          transferFunctionOpacity: {type: 't', value: 0.1},
+          transferFunctionColor : {type: 't', value: 0.1}
         },
         vertexColors: THREE.VertexColors,
         vertexShader: shader.vertexShader,
@@ -130,6 +134,9 @@ export default class PBVRenderer {
     this.kvsml[idx].maxValue = _.max(values);
     this.kvsml[idx].minValue = _.min(values);
     this.kvsml[idx].values = values;
+    this.material[idx].uniforms.maxValue.value = _.max(values);
+    this.material[idx].uniforms.minValue.value = _.min(values);
+    this.geometry[idx].addAttribute('value', new THREE.BufferAttribute(values, 1));
   }
 
   setRandomVertex (x, y, z, values, params) {
@@ -163,6 +170,12 @@ export default class PBVRenderer {
     this.scene[idx].add(this.points[idx]);
   }
 
+
+  updateOpacityParams (alphaZero, rZero, idx) {
+    this.material[idx].uniforms.alphaZero.value = alphaZero;
+    this.material[idx].uniforms.rZero.value = rZero;
+  }
+  
   updateVertexColors (spectrum, idx) {
     const range = spectrum.length - 1;
     var colors = new Float32Array(_.flatMap(this.kvsml[idx].values, v => {
@@ -181,16 +194,59 @@ export default class PBVRenderer {
     }));
     this.geometry[idx].addAttribute('alpha', new THREE.BufferAttribute(opacities, 1));
   }
+  
+  getTransferFunctionOpacity(opacity){
+    const width = opacity.length;
+    const height = 1;
+    var data = new Float32Array(width * height);
 
-  updateOpacityParams (alphaZero, rZero, idx) {
-    this.material[idx].uniforms.alphaZero.value = alphaZero;
-    this.material[idx].uniforms.rZero.value = rZero;
+    for(let i=0; i<width; i++){
+      data[i] = opacity[i];
+    }
+    //use THREE.AlphaFormat because opacity is one dimension.
+    var texture = new THREE.DataTexture(data, width, height, THREE.AlphaFormat, THREE.FloatType);
+    texture.generateMipmaps = false;
+    texture.minFilter = THREE.LinearFilter;
+    texture.magFilter = THREE.LinearFilter;
+    texture.wrapS = THREE.ClampToEdgeWrapping;
+    texture.wrapT = THREE.ClampToEdgeWrapping;
+    texture.needsUpdate = true;
+    return texture;
+  }
+
+  getTransferFunctionColor(spectrum){
+    const width = spectrum.length;
+    const height = 1;
+    var data = new Float32Array(width * height * 4);
+
+    //spectrum is two dimension array. spectrum[][4]
+    for(let i=0; i<width; i++){
+      data[4*i] = spectrum[i][0];
+      data[4*i+1] = spectrum[i][1];
+      data[4*i+2] = spectrum[i][2];
+      data[4*i+3] = spectrum[i][3];
+    }
+
+    //use THREE.RGBAFormat because spectrum is four dimensions.
+    var texture = new THREE.DataTexture(data, width, height, THREE.RGBAFormat, THREE.FloatType)
+    texture.needsUpdate = true;
+    return texture;
+  }
+
+  updateTransferFunction(params, idx){
+    const opacityTexture = this.getTransferFunctionOpacity(params.opacity);
+    const colorTexture = this.getTransferFunctionColor(params.spectrum);
+
+    this.material[idx].uniforms.transferFunctionOpacity.value = opacityTexture;
+    this.material[idx].uniforms.transferFunctionColor.value = colorTexture;
+
   }
 
   updateAllAttributes (params, idx) {
     this.updateVertexColors(params.spectrum, idx);
-    this.updateOpacity(params.opacity, idx);
+    // this.updateOpacity(params.opacity, idx);
     this.updateOpacityParams(params.alphaZero, params.rZero, idx);
+    this.updateTransferFunction(params, idx);
   }
 
   updateAllVertexColors (spectrum) {
