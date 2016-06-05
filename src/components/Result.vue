@@ -14,6 +14,7 @@
 import request from 'axios';
 request.defaults.responseType = 'arraybuffer';
 
+import vdap from 'vdap'
 import PBVRenderer from '../PBVRenderer';
 
 const pbvr = new PBVRenderer(640, 640);
@@ -56,14 +57,19 @@ export default {
     }
   },
   methods: {
-    retrieveSampleKvsml () { // TODO: This block should be replaced with OPeNDAP request if needed.
-      var coords, values;
-      request.get('./assets/kvsml/test_coord.dat')
-      .then(res => coords = res.data)
-      .then(() => request.get('./assets/kvsml/test_value.dat'))
-      .then(res => values = res.data)
-      .then(() => { pbvr.setRandomVertex(new Float32Array(coords), new Float32Array(values), this.$parent)})
-      .then(this.updateStats);
+    retrieveSampleKvsml () {
+      const key = 'dods-password'
+      const password = localStorage.getItem(key) || prompt('password?')
+      const hash = btoa(`vizlab:${password}`)
+      vdap.loadData('http://133.3.250.177/thredds/dodsC/pbr/test.nc.dods?x,y,z,value', {headers: {Authorization: `Basic ${hash}`}})
+        .then((data) => {
+          localStorage.setItem(key, password)
+          pbvr.setRandomVertex(data[0], data[1], data[2], data[3], this.$parent)
+          this.updateStats()
+        })
+        .catch(() => {
+          localStorage.removeItem(key)
+        })
     },
     updateStats () {
       this.minValue = Math.floor(pbvr.getMinValue() * 100) / 100;
