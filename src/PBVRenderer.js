@@ -39,6 +39,8 @@ export default class PBVRenderer {
           rZero: {type: 'f', value: 0.9},
           maxValue: {type: 'f', value: 1},
           minValue: {type: 'f', value: 0.001},
+          opacityRange: {type: 'f', value: 0},
+          colorRange: {type: 'f', value: 0},
           transferFunctionOpacity: {type: 't', value: 0.1},
           transferFunctionColor : {type: 't', value: 0.1}
         },
@@ -136,7 +138,7 @@ export default class PBVRenderer {
     this.kvsml[idx].values = values;
     this.material[idx].uniforms.maxValue.value = _.max(values);
     this.material[idx].uniforms.minValue.value = _.min(values);
-    this.geometry[idx].addAttribute('value', new THREE.BufferAttribute(values, 1));
+    this.geometry[idx].addAttribute('valueData', new THREE.BufferAttribute(values, 1));
   }
 
   setRandomVertex (x, y, z, values, params) {
@@ -239,6 +241,8 @@ export default class PBVRenderer {
 
     this.material[idx].uniforms.transferFunctionOpacity.value = opacityTexture;
     this.material[idx].uniforms.transferFunctionColor.value = colorTexture;
+    this.material[idx].uniforms.opacityRange.value = params.opacity.length - 1.0;
+    this.material[idx].uniforms.colorRange.value = params.spectrum.length - 1.0;
 
   }
 
