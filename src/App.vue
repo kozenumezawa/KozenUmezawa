@@ -7,6 +7,7 @@
       color
       opacity
       params
+      ensemble
       buttons
   .unsupported(v-if="!supportWebGL")
     p: strong
@@ -25,6 +26,7 @@ import Color   from './components/Color.vue';
 import Opacity  from './components/Opacity.vue';
 import Params  from './components/Params.vue';
 import Buttons from './components/Buttons.vue';
+import Ensemble from './components/Ensemble.vue';
 
 export default {
   components: {
@@ -32,6 +34,7 @@ export default {
     Color,
     Opacity,
     Params,
+    Ensemble,
     Buttons
   },
   data () {
@@ -40,6 +43,7 @@ export default {
       opacity: [],
       alphaZero: 0.3,
       rZero: 0.9,
+      ensembleN: 2,
       applyImmediately: true
     }
   },

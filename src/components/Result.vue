@@ -39,6 +39,11 @@ export default {
       }
     });
 
+    this.$on('updateEnsembleN', () => {
+      if(this.$parent.applyImmediately){
+        pbvr.updateEnsembleN(this.$parent.ensembleN);
+      }
+    });
     this.$on('apply', () => pbvr.updateAllParticles(this.$parent));
     this.$on('reset', () => pbvr.updateAllParticles(this.$parent));
 

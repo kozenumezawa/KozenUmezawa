@@ -263,4 +263,8 @@ export default class PBVRenderer {
     this.updateAllTransferFunction(params);
     this.updateAllOpacityParams(params.alphaZero, params.rZero);
   }
+
+  updateEnsembleN (params) {
+    this.N_ENSEMBLE = params.ensembleN;
+  }
 }
