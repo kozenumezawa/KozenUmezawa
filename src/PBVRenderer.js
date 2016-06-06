@@ -39,8 +39,6 @@ export default class PBVRenderer {
           rZero: {type: 'f', value: 0.9},
           maxValue: {type: 'f', value: 1},
           minValue: {type: 'f', value: 0.001},
-          opacityRange: {type: 'f', value: 0},
-          colorRange: {type: 'f', value: 0},
           transferFunctionOpacity: {type: 't', value: 0.1},
           transferFunctionColor : {type: 't', value: 0.1}
         },
@@ -57,7 +55,7 @@ export default class PBVRenderer {
     //prepare kvsml with the same numver of N_ENSEMBLE
     this.kvsml = new Array();
     for(let i=0; i<this.N_ENSEMBLE; i++){
-      this.kvsml.push({values: [], maxValue: 0, minValue: 1});
+      this.kvsml.push({maxValue: 0, minValue: 1});
     }
 
 
@@ -135,7 +133,6 @@ export default class PBVRenderer {
   setVertexValues (values, idx) {
     this.kvsml[idx].maxValue = _.max(values);
     this.kvsml[idx].minValue = _.min(values);
-    this.kvsml[idx].values = values;
     this.material[idx].uniforms.maxValue.value = _.max(values);
     this.material[idx].uniforms.minValue.value = _.min(values);
     this.geometry[idx].addAttribute('valueData', new THREE.BufferAttribute(values, 1));
@@ -166,6 +163,7 @@ export default class PBVRenderer {
       this.addPointsToScene(idx);
       this.updateAllAttributes(params, idx);
     });
+    this.updateAllMaxMinValue();
   }
 
   addPointsToScene (idx) {
@@ -177,26 +175,7 @@ export default class PBVRenderer {
     this.material[idx].uniforms.alphaZero.value = alphaZero;
     this.material[idx].uniforms.rZero.value = rZero;
   }
-  
-  updateVertexColors (spectrum, idx) {
-    const range = spectrum.length - 1;
-    var colors = new Float32Array(_.flatMap(this.kvsml[idx].values, v => {
-      const index = Math.floor(range * (v - this.kvsml[idx].minValue) / (this.kvsml[idx].maxValue - this.kvsml[idx].minValue));
-      return spectrum[index];
-    }));
 
-    this.geometry[idx].addAttribute('color', new THREE.BufferAttribute(colors, 4));
-  }
-
-  updateOpacity (opacity, idx) {
-    const range = opacity.length - 1;
-    const opacities = new Float32Array(_.map(this.kvsml[idx].values, v => {
-      const index = Math.floor(range * (v - this.kvsml[idx].minValue) / (this.kvsml[idx].maxValue - this.kvsml[idx].minValue));
-      return opacity[index];
-    }));
-    this.geometry[idx].addAttribute('alpha', new THREE.BufferAttribute(opacities, 1));
-  }
-  
   getTransferFunctionOpacity(opacity){
     const width = opacity.length;
     const height = 1;
@@ -205,6 +184,7 @@ export default class PBVRenderer {
     for(let i=0; i<width; i++){
       data[i] = opacity[i];
     }
+
     //use THREE.AlphaFormat because opacity is one dimension.
     var texture = new THREE.DataTexture(data, width, height, THREE.AlphaFormat, THREE.FloatType);
     texture.generateMipmaps = false;
@@ -230,7 +210,12 @@ export default class PBVRenderer {
     }
 
     //use THREE.RGBAFormat because spectrum is four dimensions.
-    var texture = new THREE.DataTexture(data, width, height, THREE.RGBAFormat, THREE.FloatType)
+    var texture = new THREE.DataTexture(data, width, height, THREE.RGBAFormat, THREE.FloatType);
+    texture.generateMipmaps = false;
+    texture.minFilter = THREE.LinearFilter;
+    texture.magFilter = THREE.LinearFilter;
+    texture.wrapS = THREE.ClampToEdgeWrapping;
+    texture.wrapT = THREE.ClampToEdgeWrapping;
     texture.needsUpdate = true;
     return texture;
   }
@@ -241,38 +226,30 @@ export default class PBVRenderer {
 
     this.material[idx].uniforms.transferFunctionOpacity.value = opacityTexture;
     this.material[idx].uniforms.transferFunctionColor.value = colorTexture;
-    this.material[idx].uniforms.opacityRange.value = params.opacity.length - 1.0;
-    this.material[idx].uniforms.colorRange.value = params.spectrum.length - 1.0;
+  }
 
+  updateAllTransferFunction(params){
+    const opacityTexture = this.getTransferFunctionOpacity(params.opacity);
+    const colorTexture = this.getTransferFunctionColor(params.spectrum);
+
+    this.scene.forEach((element,idx) => {
+      this.material[idx].uniforms.transferFunctionOpacity.value = opacityTexture;
+      this.material[idx].uniforms.transferFunctionColor.value = colorTexture;
+    });
+  }
+
+  updateAllMaxMinValue(){
+    const max = this.getMaxValue();
+    const min = this.getMinValue();
+    this.scene.forEach((element, idx) => {
+      this.material[idx].uniforms.maxValue.value = max;
+      this.material[idx].uniforms.minValue.value = min;
+    });
   }
 
   updateAllAttributes (params, idx) {
-    this.updateVertexColors(params.spectrum, idx);
-    // this.updateOpacity(params.opacity, idx);
     this.updateOpacityParams(params.alphaZero, params.rZero, idx);
     this.updateTransferFunction(params, idx);
-  }
-
-  updateAllVertexColors (spectrum) {
-    const range = spectrum.length - 1;
-    this.scene.forEach((element, idx) => {
-      var colors = new Float32Array(_.flatMap(this.kvsml[idx].values, v => {
-        const index = Math.floor(range * (v - this.kvsml[idx].minValue) / (this.kvsml[idx].maxValue - this.kvsml[idx].minValue));
-        return spectrum[index];
-      }));
-      this.geometry[idx].addAttribute('color', new THREE.BufferAttribute(colors, 4));
-    });
-  }
-
-  updateAllOpacity (opacity) {
-    const range = opacity.length - 1;
-    this.scene.forEach((element, idx) => {
-      const opacities = new Float32Array(_.map(this.kvsml[idx].values, v => {
-        const index = Math.floor(range * (v - this.kvsml[idx].minValue) / (this.kvsml[idx].maxValue - this.kvsml[idx].minValue));
-        return opacity[index];
-      }));
-      this.geometry[idx].addAttribute('alpha', new THREE.BufferAttribute(opacities, 1));
-    });
   }
 
   updateAllOpacityParams (alphaZero, rZero) {
@@ -283,8 +260,7 @@ export default class PBVRenderer {
   }
 
   updateAllParticles (params) {
-    this.updateAllVertexColors(params.spectrum);
-     this.updateAllOpacity(params.opacity);
-     this.updateAllOpacityParams(params.alphaZero, params.rZero);
+    this.updateAllTransferFunction(params);
+    this.updateAllOpacityParams(params.alphaZero, params.rZero);
   }
 }

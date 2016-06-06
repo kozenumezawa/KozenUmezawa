@@ -23,13 +23,13 @@ export default {
   ready () {
     this.$on('updateVertexColors', () => {
       if(this.$parent.applyImmediately){
-        pbvr.updateAllVertexColors(this.$parent.spectrum);
+        pbvr.updateAllTransferFunction(this.$parent);
       }
     });
 
     this.$on('updateOpacity', () => {
       if(this.$parent.applyImmediately){
-        pbvr.updateAllOpacity(this.$parent.opacity);
+        pbvr.updateAllTransferFunction(this.$parent);
       }
     });
 
