@@ -34,9 +34,10 @@ export default {
   methods: {
     initGraph () {
       this.context.clearRect(0, 0, opacity.width, opacity.height);
+
       this.drawLine();
       this.drawHandles();
-
+      this.drawGrid();
       // Additional 0.0001 is used to prevent divergence of particle size
       // The range of opacity is [0.0, 1.0]
       this.$parent.opacity = _.map(getCurvePoints(), pt => 1.00001 - pt[1] / opacity.height);
@@ -50,12 +51,33 @@ export default {
       this.context.stroke();
     },
     drawHandles () {
-      this.context.strokeStyle = 'black';
       this.context.beginPath();
       for(let i=1; i < opacities.length - 1; i++){
         this.context.rect(opacities[i][0] - 3, opacities[i][1] - 3, 6, 6);
       }
       this.context.stroke();
+    },
+    drawGrid () {
+      this.context.lineWidth = 0.3;
+      this.context.strokeStyle = '#202020';
+
+      this.context.beginPath();
+      this.context.moveTo(0, opacity.height / 2);
+      this.context.lineTo(opacity.width, opacity.height / 2);
+      this.context.stroke();
+
+      this.context.beginPath();
+      this.context.moveTo(opacity.width / 3, 0);
+      this.context.lineTo(opacity.width / 3, opacity.height);
+      this.context.stroke();
+
+      this.context.beginPath();
+      this.context.moveTo(opacity.width / 3 * 2, 0);
+      this.context.lineTo(opacity.width / 3 * 2, opacity.height);
+      this.context.stroke();
+
+      this.context.strokeStyle = '#000000';
+      this.context.lineWidth = 1.0;
     },
     onMouseDown (e) {
       const pos = helper.getClickedPoint(e);
