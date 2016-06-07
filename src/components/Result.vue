@@ -55,8 +55,8 @@ export default {
   },
   data () {
     return {
-      minValue: 0,
-      maxValue: 0,
+      minValue: '-',
+      maxValue: '-',
       framesPerSecond: 0,
       numberOfVertices: 0,
     }
@@ -79,8 +79,10 @@ export default {
     updateStats () {
       this.minValue = Math.floor(pbvr.getMinValue() * 100) / 100;
       this.maxValue = Math.floor(pbvr.getMaxValue() * 100) / 100;
+      this.$parent.minValue = this.minValue;
+      this.$parent.maxValue = this.maxValue;
       this.numberOfVertices = pbvr.getNumberOfVertices();
-
+      this.$parent.emit('updateValue');
       setInterval(() => {
         this.framesPerSecond = pbvr.getFramesPerSecond();
       }, 1000);

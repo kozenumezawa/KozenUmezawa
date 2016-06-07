@@ -2,6 +2,11 @@
 .title Opacity
 canvas#opacity(width="430" height="200" @mousemove="onMouseMove" @mousedown="onMouseDown"
               @mouseup="onMouseUp" @mouseleave="onMouseUp")
+.row
+  .column.column-50
+    {{ minValue }}
+  .column.column-60
+    .float-right: {{ maxValue }}
 </template>
 
 <script>
@@ -18,17 +23,27 @@ let opacities = [[0, 180], [215, 100], [430, 20]]; //first position
 const getCurvePoints = () => _.chunk(spline.getCurvePoints(_.flatten(opacities), 0.2, 50, false), 2);
 
 export default {
+  data () {
+    return {
+      maxValue: '-',
+      minValue: '-'
+    }
+  },
   computed: {
     opacity: () => document.getElementById('opacity'),
     context: () => document.getElementById('opacity').getContext('2d'),
   },
   ready () {
     this.initGraph();
-
     this.$on('reset', () => {
       opacities = [[0, 180], [215, 100], [430, 20]];
       this.initGraph();
       this.$parent.emit('updateOpacity');
+    });
+
+    this.$on('updateValue', () => {
+      this.maxValue = this.$parent.maxValue;
+      this.minValue = this.$parent.minValue;
     });
   },
   methods: {

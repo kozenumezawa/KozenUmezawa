@@ -43,6 +43,8 @@ export default {
       opacity: [],
       alphaZero: 0.3,
       rZero: 0.9,
+      maxValue: 1,
+      minValue: 0,
       ensembleN: 2,
       applyImmediately: true
     }
