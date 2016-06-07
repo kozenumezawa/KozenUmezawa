@@ -8,6 +8,7 @@
     "build": "cross-env NODE_ENV=production webpack --progress --hide-modules"
   },
   "dependencies": {
+    "spline-interpolator": "0.0.0",
     "three": "^0.77.1",
     "three-effectcomposer": "0.0.1",
     "three-ensemble-average-pass": "0.0.1",

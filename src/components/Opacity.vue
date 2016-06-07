@@ -12,6 +12,7 @@ canvas#opacity(width="430" height="200" @mousemove="onMouseMove" @mousedown="onM
 <script>
 import _ from 'lodash';
 import spline from 'cardinal-spline-js';
+import SplineInterpolator from 'spline-interpolator';
 
 import helper from '../helper';
 
@@ -20,7 +21,17 @@ let isDown = false;
 
 let opacities = [[0, 180], [215, 100], [430, 20]]; //first position
 
-const getCurvePoints = () => _.chunk(spline.getCurvePoints(_.flatten(opacities), 0.2, 50, false), 2);
+//const getCurvePoints = () => _.chunk(spline.getCurvePoints(_.flatten(opacities), 0.2, 50, false), 2);
+function getCurvePoints(){
+  let x = new Array();
+  let y = new Array();
+  opacities.forEach((element, idx) => {
+    x.push(opacities[idx][0]);
+    y.push(opacities[idx][1]);
+  });
+  const interpolator = new SplineInterpolator(x, y);
+  return interpolator.curve(101);
+}
 
 export default {
   data () {
