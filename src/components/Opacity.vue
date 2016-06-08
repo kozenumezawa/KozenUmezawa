@@ -20,17 +20,39 @@ let pIndex = -1;
 let isDown = false;
 
 let opacities = [[0, 180], [215, 100], [430, 20]]; //first position
+let line = getInitialCurvePoints();
 
-//const getCurvePoints = () => _.chunk(spline.getCurvePoints(_.flatten(opacities), 0.2, 50, false), 2);
-function getCurvePoints(){
-  let x = new Array();
-  let y = new Array();
+function getInitialCurvePoints(){
+  let x = [];
+  let y = [];
   opacities.forEach((element, idx) => {
     x.push(opacities[idx][0]);
     y.push(opacities[idx][1]);
   });
   const interpolator = new SplineInterpolator(x, y);
   return interpolator.curve(101);
+}
+
+
+function updateLine(position){
+  let idx;
+  for(idx = 0; opacities[idx][0] < position[0]; idx++);
+
+  const x1 = opacities[idx-1][0];
+  const y1 = opacities[idx-1][1];
+  const x2 = opacities[idx+1][0];
+  const y2 = opacities[idx+1][1];
+
+  let x = [x1, position[0], x2];
+  let y = [y1, position[1], y2];
+  const interpolator = new SplineInterpolator(x, y);
+
+  //update the line between x1 and x2
+  for(idx = 0; line[idx][0] < x2; idx++){
+    if(line[idx][0] > x1){
+      line[idx][1] = interpolator.interpolate(line[idx][0]);
+    }
+  }
 }
 
 export default {
@@ -48,6 +70,7 @@ export default {
     this.initGraph();
     this.$on('reset', () => {
       opacities = [[0, 180], [215, 100], [430, 20]];
+      line = getInitialCurvePoints();
       this.initGraph();
       this.$parent.emit('updateOpacity');
     });
@@ -66,10 +89,11 @@ export default {
       this.drawGrid();
       // Additional 0.0001 is used to prevent divergence of particle size
       // The range of opacity is [0.0, 1.0]
-      this.$parent.opacity = _.map(getCurvePoints(), pt => 1.00001 - pt[1] / opacity.height);
+      this.$parent.opacity = _.map(line, pt => 1.00001 - pt[1] / opacity.height);
     },
     drawLine () {
-      const s = getCurvePoints();
+      const s = line;
+      console.log(s[10]);
       this.context.beginPath();
       for(let i=0; i < s.length - 1; i++) {
         this.context.lineTo(s[i][0], s[i][1]);
@@ -119,7 +143,7 @@ export default {
         }
   		}
 
-      const s = getCurvePoints();
+      const s = line;
       const newHandlePos = s.find(pt => Math.abs(pt[0] - pos.x) < 10 && Math.abs(pt[1] - pos.y) < 10);
 
       if(!newHandlePos) return;
@@ -135,9 +159,12 @@ export default {
       const pos = helper.getClickedPoint(e);
 			opacities[pIndex] = [pos.x, pos.y];
 
+      const newLength = opacities.length;
       // Remove the point if its position is overrapped with another point
       opacities = _.uniqWith(opacities.sort((a, b) => a[0] - b[0]), (a, b) => Math.abs(a[0] - b[0]) < 1);
-
+      if(newLength == opacities.length){
+        updateLine([pos.x, pos.y]);
+      }
       this.initGraph();
     },
     onMouseUp () {
