@@ -50,7 +50,14 @@ function updateLine(position){
   //update the line between x1 and x2
   for(idx = 0; line[idx][0] < x2; idx++){
     if(line[idx][0] > x1){
-      line[idx][1] = interpolator.interpolate(line[idx][0]);
+      const newY = interpolator.interpolate(line[idx][0]);
+      if(newY > opacity.height){
+        line[idx][1] = opacity.height;
+      }else if(newY < 0){
+        line[idx][1] = 0;
+      }else{
+        line[idx][1] = newY;
+      }
     }
   }
 }
@@ -93,7 +100,6 @@ export default {
     },
     drawLine () {
       const s = line;
-      console.log(s[10]);
       this.context.beginPath();
       for(let i=0; i < s.length - 1; i++) {
         this.context.lineTo(s[i][0], s[i][1]);
