@@ -30,7 +30,7 @@ function getInitialCurvePoints(){
     y.push(opacities[idx][1]);
   });
   const interpolator = new SplineInterpolator(x, y);
-  return interpolator.curve(101);
+  return interpolator.curve(100);
 }
 
 
@@ -54,7 +54,7 @@ function updateLine(position){
       if(newY > opacity.height){
         line[idx][1] = opacity.height;
       }else if(newY < 0){
-        line[idx][1] = 0;
+        line[idx][1] = opacity.height * 0.00002;  //need 0.00002 to prevent an error
       }else{
         line[idx][1] = newY;
       }
