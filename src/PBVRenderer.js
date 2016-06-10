@@ -11,8 +11,8 @@ import EnsembleAveragePass from 'three-ensemble-average-pass';
 
 export default class PBVRenderer {
   constructor (width, height) {
-    this.N_ENSEMBLE = 3;
-    this.N_particle = 500000;
+    this.N_ENSEMBLE = 1;
+    this.N_particle = 50000;
 
     this.animate = this.animate.bind(this);
 
@@ -138,11 +138,11 @@ export default class PBVRenderer {
     this.geometry[idx].addAttribute('valueData', new THREE.BufferAttribute(values, 1));
   }
 
-  setRandomVertex (x, y, z, values, params) {
+  setRandomVertex(coords, values, params){
     this.scene.forEach((element, idx) => {
       var index = new Array(this.N_particle);
       index.fill(0);
-
+      console.log(values.length);
       index.forEach((element,id) => {
         index[id] = Math.floor(Math.random()*values.length);
       });
@@ -152,10 +152,10 @@ export default class PBVRenderer {
       var tmpvalues = new Float32Array(this.N_particle);
       //Choose vertices at random
       index.forEach((element, id) => {
-        tmpcoords[id * 3] = x[element]
-        tmpcoords[id * 3 + 1] = y[element]
-        tmpcoords[id * 3 + 2] = z[element]
-        tmpvalues[id] = values[element]
+        for(let i=0; i<3; i++){
+          tmpcoords[id*3+i] = coords[element*3+i];
+        }
+        tmpvalues[id] = values[element];
       });
 
       this.setVertexCoords(tmpcoords, idx);
