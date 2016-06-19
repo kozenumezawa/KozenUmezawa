@@ -30,10 +30,10 @@ export default class PBVRenderer {
     this.camera.position.z = 70;
 
     //prepare points and scene with the same number of N_ENSEMBLE
-    this.geometry = new Array();
-    this.material = new Array();
-    this.points = new Array();
-    this.scene = new Array();
+    this.geometry = [];
+    this.material = [];
+    this.points = [];
+    this.scene = [];
     for(let i=0; i<this.N_ENSEMBLE; i++){
       this.geometry.push(new THREE.BufferGeometry());
       this.material.push(new THREE.ShaderMaterial(_.assign(THREE.ShaderLib['points'], {
@@ -56,7 +56,7 @@ export default class PBVRenderer {
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
 
     //prepare kvsml with the same numver of N_ENSEMBLE
-    this.kvsml = new Array();
+    this.kvsml = [];
     for(let i=0; i<this.N_ENSEMBLE; i++){
       this.kvsml.push({maxValue: 0, minValue: 1});
     }
@@ -117,7 +117,7 @@ export default class PBVRenderer {
   }
 
   getNumberOfVertices () {
-    return this.N_particle;
+    return 0;
   }
 
   getFramesPerSecond () {
@@ -141,31 +141,56 @@ export default class PBVRenderer {
     this.geometry[idx].addAttribute('valueData', new THREE.BufferAttribute(values, 1));
   }
 
-  setRandomVertex(coords, values, params){
+  generateParticlesFromPrism(coords, values, connect, params) {
     this.scene.forEach((element, idx) => {
-      var index = new Array(this.N_particle);
-      index.fill(0);
-      index.forEach((element,id) => {
-        index[id] = Math.floor(Math.random()*values.length);
-      });
-      index = index.sort((a,b) =>{return a-b});
+      const stopLength = connect.length - 5;
 
-      var tmpcoords = new Float32Array(this.N_particle*3);
-      var tmpvalues = new Float32Array(this.N_particle);
-      //Choose vertices at random
-      index.forEach((element, id) => {
-        for(let i=0; i<3; i++){
-          tmpcoords[id*3+i] = coords[element*3+i];
-        }
-        tmpvalues[id] = values[element];
-      });
+      let tmpcoords = new Float32Array(Math.floor(connect.length / 6) * 3);
+      let tmpvalues = new Float32Array(Math.floor(connect.length / 6));
 
+      let valueIndex = 0;
+      let coordIndex = 0;
+      //  create a prism cell and generate a particle
+      for(let i = 0; i < stopLength; i = i + 6) {
+        const v0 = this.getCoord(coords, connect[i + 0]);
+        const v1 = this.getCoord(coords, connect[i + 1]);
+        const v2 = this.getCoord(coords, connect[i + 2]);
+        const v3 = this.getCoord(coords, connect[i + 3]);
+        const v4 = this.getCoord(coords, connect[i + 4]);
+        const v5 = this.getCoord(coords, connect[i + 5]);
+
+        const s0 = values[connect[i + 0]];
+        const s1 = values[connect[i + 1]];
+        const s2 = values[connect[i + 2]];
+        const s3 = values[connect[i + 3]];
+        const s4 = values[connect[i + 4]];
+        const s5 = values[connect[i + 5]];
+
+        const prism = new prismCell(v0, v1, v2, v3, v4, v5, s0, s1, s2, s3, s4, s5);
+
+        const test = prism.randomSampling();
+        tmpvalues[valueIndex++] = prism.interpolateScalar(test);
+
+        const testcoords = prism.localToGlobal(test);
+        tmpcoords[coordIndex++] = testcoords[0];
+        tmpcoords[coordIndex++] = testcoords[1];
+        tmpcoords[coordIndex++] = testcoords[2];
+
+      }
       this.setVertexCoords(tmpcoords, idx);
       this.setVertexValues(tmpvalues, idx);
       this.addPointsToScene(idx);
       this.updateAllAttributes(params, idx);
     });
     this.updateAllMaxMinValue();
+  }
+  
+  getCoord(data, idx) {
+    var result = [];
+    result[0] = data[idx * 3];
+    result[1] = data[idx * 3 + 1];
+    result[2] = data[idx * 3 + 2];
+    return result;
   }
 
   addPointsToScene (idx) {

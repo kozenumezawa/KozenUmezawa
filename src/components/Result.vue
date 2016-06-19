@@ -62,12 +62,14 @@ export default {
   },
   methods: {
     retrieveSampleKvsml () { // TODO: This block should be replaced with OPeNDAP request if needed.
-      var coords, values;
+      let coords, values, connect;
       request.get('./assets/kvsml/51000_coord.dat')
       .then(res => coords = res.data)
       .then(() => request.get('./assets/kvsml/51000_value.dat'))
       .then(res => values = res.data)
-      .then(() => { pbvr.setRandomVertex(new Float32Array(coords), new Float32Array(values), this.$parent)})
+      .then(() => request.get('./assets/kvsml/51000_connect.dat'))
+      .then(res => connect = res.data)
+      .then(() => { pbvr.generateParticlesFromPrism(new Float32Array(coords), new Float32Array(values), new Uint32Array(connect), this.$parent)})
       .then(this.updateStats);
     },
     updateStats () {
