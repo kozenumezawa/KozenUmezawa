@@ -15,8 +15,7 @@ import prismCell from './prismCell';
 export default class PBVRenderer {
   constructor (width, height) {
     this.N_ENSEMBLE = 1;
-    this.N_particle = 50000;
-
+    
     this.animate = this.animate.bind(this);
 
     this.renderer = new THREE.WebGLRenderer();
@@ -39,8 +38,8 @@ export default class PBVRenderer {
       this.material.push(new THREE.ShaderMaterial(_.assign(THREE.ShaderLib['points'], {
         uniforms: {
           alphaZero: {type: 'f', value: 0.3},
-          rZero: {type: 'f', value: 0.9},
-          maxValue: {type: 'f', value: 1},
+          rZero: {type: 'f', value: 0.3},
+          maxValue: {type: 'f', value: 100},
           minValue: {type: 'f', value: 0.001},
           transferFunctionOpacity: {type: 't', value: 0.1},
           transferFunctionColor : {type: 't', value: 0.1}
@@ -142,9 +141,10 @@ export default class PBVRenderer {
   }
 
   generateParticlesFromPrism(coords, values, connect, params) {
+    const particleDensity = - Math.log(1 - params.alphaZero) / (4 / 3 * Math.PI * Math.pow(params.rZero, 3));
+
     this.scene.forEach((element, idx) => {
       const stopLength = connect.length - 5;
-
       let tmpcoords = new Float32Array(Math.floor(connect.length / 6) * 3);
       let tmpvalues = new Float32Array(Math.floor(connect.length / 6));
 
@@ -168,6 +168,11 @@ export default class PBVRenderer {
 
         const prism = new prismCell(v0, v1, v2, v3, v4, v5, s0, s1, s2, s3, s4, s5);
 
+        const N_particle = Math.floor(prism.volume * particleDensity);  //  calculate the number of particles in the prism.
+
+        //  generate particles
+        for(let j = 0; j < N_particle; j++){
+        }
         const test = prism.randomSampling();
         tmpvalues[valueIndex++] = prism.interpolateScalar(test);
 
@@ -191,6 +196,86 @@ export default class PBVRenderer {
     result[1] = data[idx * 3 + 1];
     result[2] = data[idx * 3 + 2];
     return result;
+  }
+
+  densityCalculator(coords) {
+    const MAX_GRID = 200;
+    let x = new Float32Array(coords.length / 3);
+    let y = new Float32Array(coords.length / 3);
+    let z = new Float32Array(coords.length / 3);
+
+    for(let i = 0; i < coords.length; i += 3){
+      x[i] = coords[i + 0];
+      y[i] = coords[i + 1];
+      z[i] = coords[i + 2];
+    }
+
+    const x_min = _.min(x);
+    const y_min = _.min(y);
+    const z_min = _.min(z);
+    const x_max = _.max(x);
+    const y_max = _.max(y);
+    const z_max = _.max(z);
+
+    const range_x = x_max - x_min;
+    const range_y = y_max - y_min;
+    const range_z = z_max - z_min;
+
+    let range_max = range_x;
+    if(range_max < range_y){
+      range_max = range_y;
+    }
+    if(range_max < range_z){
+      range_max = range_z;
+    }
+
+    let m_x, m_y, m_z;
+    if(range_max == range_x){
+      m_x = MAX_GRID;
+      m_y = (range_y / range_x) * m_x;
+      m_z = (range_z / range_x) * m_x;
+    }else if(range_max == range_y){
+      m_y = MAX_GRID;
+      m_z = (range_z / range_y) * m_y;
+      m_x = (range_x / range_y) * m_y;
+    }else{
+      m_z = MAX_GRID;
+      m_x = (range_x / range_z) * m_z;
+      m_y = (range_y / range_z) * m_z;
+    }
+
+    let dx = range_x / m_x;
+    let dy = range_y / m_y;
+    let dz = range_z / m_z;
+
+    let cubeVolume = dx * dy * dz;
+    const length = Math.floor(m_x * m_y * m_z);
+    let table = new Array(length);
+    table.fill(0);
+
+    //  count the number of vertices in the grid
+    for(let i = 0; i < coords.length / 3; i ++){
+      let index_x = (x[i] - x_min) / dx;
+      let index_y = (y[i] - y_min) / dy;
+      let index_z = (z[i] - z_min) / dz;
+      table[Math.floor(index_x + index_y * m_x + index_z * m_x * m_y)] += 1;
+    }
+
+    //calculate density
+    for(let i = 0; i < length; i ++){
+      table[i] = table[i] / cubeVolume;
+    }
+
+    const densityMap = {density: table,
+                        x_min: x_min,
+                        y_min: y_min,
+                        z_min: z_min,
+                        dx: dx,
+                        dy: dy,
+                        dz: dz,
+                        m_x: m_x,
+                        m_y: m_y };
+    return densityMap;
   }
 
   addPointsToScene (idx) {

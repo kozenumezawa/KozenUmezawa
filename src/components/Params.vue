@@ -10,7 +10,7 @@
     label
       .float-left r<sub>0</sub>
       .float-right: small {{ rZero }}
-    input(type="range" max="0.99" min="0.01" step="0.01" v-model="rZero" @change="update('rZero')" debounce="500")
+    input(type="range" max="0.5" min="0.01" step="0.05" v-model="rZero" @change="update('rZero')" debounce="500")
 </template>
 
 <script>
@@ -20,7 +20,7 @@ export default {
 
     this.$on('reset', () => {
       this.$parent.alphaZero = 0.3;
-      this.$parent.rZero = 0.9;
+      this.$parent.rZero = 0.3;
       this.init();
       this.$parent.emit('updateOpacityParams');
     });

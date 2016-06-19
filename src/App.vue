@@ -42,7 +42,7 @@ export default {
       spectrum: [],
       opacity: [],
       alphaZero: 0.3,
-      rZero: 0.9,
+      rZero: 0.3,
       maxValue: 1,
       minValue: 0,
       ensembleN: 2,
