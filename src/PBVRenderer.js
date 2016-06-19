@@ -9,6 +9,9 @@ import getEffectComposer from 'three-effectcomposer';
 const EffectComposer = getEffectComposer(THREE);
 import EnsembleAveragePass from 'three-ensemble-average-pass';
 
+import prismCell from './prismCell';
+
+
 export default class PBVRenderer {
   constructor (width, height) {
     this.N_ENSEMBLE = 1;
@@ -142,7 +145,6 @@ export default class PBVRenderer {
     this.scene.forEach((element, idx) => {
       var index = new Array(this.N_particle);
       index.fill(0);
-      console.log(values.length);
       index.forEach((element,id) => {
         index[id] = Math.floor(Math.random()*values.length);
       });
