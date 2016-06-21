@@ -33,12 +33,14 @@ export default class PBVRenderer {
     this.material = [];
     this.points = [];
     this.scene = [];
+    const alphaZero = 0.2;
+    const rZero = 0.1;
     for(let i=0; i<this.N_ENSEMBLE; i++){
       this.geometry.push(new THREE.BufferGeometry());
       this.material.push(new THREE.ShaderMaterial(_.assign(THREE.ShaderLib['points'], {
         uniforms: {
-          alphaZero: {type: 'f', value: 0.3},
-          rZero: {type: 'f', value: 0.3},
+          alphaZero: {type: 'f', value: alphaZero},
+          rZero: {type: 'f', value: rZero},
           maxValue: {type: 'f', value: 100},
           minValue: {type: 'f', value: 0.001},
           transferFunctionOpacity: {type: 't', value: 0.1},
@@ -52,6 +54,13 @@ export default class PBVRenderer {
       this.scene.push(new THREE.Scene());
     }
 
+    //calculate initial parameters
+    const delta_t = 0.005;
+    this.baseDensity = - Math.log(1 - alphaZero) / (Math.PI * rZero * rZero * delta_t);
+    const maxDensity = 1 / (8 * rZero * rZero * rZero);
+    this.maxAlpha = 1 - Math.exp(- Math.PI * rZero * rZero * maxDensity * delta_t);
+
+    console.log(this.baseDensity);
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
 
     //prepare kvsml with the same numver of N_ENSEMBLE
@@ -59,7 +68,6 @@ export default class PBVRenderer {
     for(let i=0; i<this.N_ENSEMBLE; i++){
       this.kvsml.push({maxValue: 0, minValue: 1});
     }
-
 
     //Add EffectComposer to ralize a Postprocess
     this.composer = new EffectComposer(this.renderer, new THREE.WebGLRenderTarget(width*PixelRatio, height*PixelRatio, {
@@ -116,7 +124,11 @@ export default class PBVRenderer {
   }
 
   getNumberOfVertices () {
-    return 0;
+    return this.numberOfParticles;
+  }
+
+  setNumberOfParticles(numberOfParticles) {
+    this.numberOfParticles = numberOfParticles;
   }
 
   getFramesPerSecond () {
@@ -141,17 +153,48 @@ export default class PBVRenderer {
   }
 
   generateParticlesFromPrism(coords, values, connect, params) {
-    const particleDensity = - Math.log(1 - params.alphaZero) / (4 / 3 * Math.PI * Math.pow(params.rZero, 3));
+    let numberOfParticlesArray = new Array(Math.floor(connect.length / 6));
+    let numberOfParticles = 0;
+    const stopLength = connect.length - 5;
 
+    //  create a prism cell and count the number of particles in each cell
+    for(let i = 0, cellNumber = 0; i < stopLength; i = i + 6) {
+      const v0 = this.getCoord(coords, connect[ i + 0 ]);
+      const v1 = this.getCoord(coords, connect[ i + 1 ]);
+      const v2 = this.getCoord(coords, connect[ i + 2 ]);
+      const v3 = this.getCoord(coords, connect[ i + 3 ]);
+      const v4 = this.getCoord(coords, connect[ i + 4 ]);
+      const v5 = this.getCoord(coords, connect[ i + 5 ]);
+
+      const s0 = values[ connect[ i + 0 ] ];
+      const s1 = values[ connect[ i + 1 ] ];
+      const s2 = values[ connect[ i + 2 ] ];
+      const s3 = values[ connect[ i + 3 ] ];
+      const s4 = values[ connect[ i + 4 ] ];
+      const s5 = values[ connect[ i + 5 ] ];
+
+      const prism = new prismCell(v0, v1, v2, v3, v4, v5, s0, s1, s2, s3, s4, s5);
+      
+      //  calculate the number of particles in the prism.
+      const N_particle_float = this.baseDensity * prism.volume;
+      let N_particle = Math.floor(N_particle_float);
+      if (N_particle_float - N_particle > Math.random()) {
+        N_particle++;
+      }
+      numberOfParticles += N_particle;
+      numberOfParticlesArray[cellNumber++] = N_particle;
+    }
+    
+    //  generate particles
     this.scene.forEach((element, idx) => {
       const stopLength = connect.length - 5;
-      let tmpcoords = new Float32Array(Math.floor(connect.length / 6) * 3);
-      let tmpvalues = new Float32Array(Math.floor(connect.length / 6));
+      let tmpcoords = new Float32Array(numberOfParticles * 3);
+      let tmpvalues = new Float32Array(numberOfParticles);
 
       let valueIndex = 0;
       let coordIndex = 0;
-      //  create a prism cell and generate a particle
-      for(let i = 0; i < stopLength; i = i + 6) {
+      //  create a prism cell and generate particles
+      for(let i = 0, cellNumber = 0; i < stopLength; i = i + 6) {
         const v0 = this.getCoord(coords, connect[i + 0]);
         const v1 = this.getCoord(coords, connect[i + 1]);
         const v2 = this.getCoord(coords, connect[i + 2]);
@@ -168,25 +211,25 @@ export default class PBVRenderer {
 
         const prism = new prismCell(v0, v1, v2, v3, v4, v5, s0, s1, s2, s3, s4, s5);
 
-        const N_particle = Math.floor(prism.volume * particleDensity);  //  calculate the number of particles in the prism.
-
         //  generate particles
-        for(let j = 0; j < N_particle; j++){
+        for(let j = 0; j < numberOfParticlesArray[cellNumber]; j++){
+          const sample = prism.randomSampling();
+          tmpvalues[valueIndex++] = prism.interpolateScalar(sample);
+
+          const testcoords = prism.localToGlobal(sample);
+          tmpcoords[coordIndex++] = testcoords[0];
+          tmpcoords[coordIndex++] = testcoords[1];
+          tmpcoords[coordIndex++] = testcoords[2];
         }
-        const test = prism.randomSampling();
-        tmpvalues[valueIndex++] = prism.interpolateScalar(test);
-
-        const testcoords = prism.localToGlobal(test);
-        tmpcoords[coordIndex++] = testcoords[0];
-        tmpcoords[coordIndex++] = testcoords[1];
-        tmpcoords[coordIndex++] = testcoords[2];
-
+        cellNumber++;
       }
       this.setVertexCoords(tmpcoords, idx);
       this.setVertexValues(tmpvalues, idx);
       this.addPointsToScene(idx);
       this.updateAllAttributes(params, idx);
     });
+    
+    this.setNumberOfParticles(numberOfParticles);
     this.updateAllMaxMinValue();
   }
   

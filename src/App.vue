@@ -41,8 +41,8 @@ export default {
     return {
       spectrum: [],
       opacity: [],
-      alphaZero: 0.3,
-      rZero: 0.3,
+      alphaZero: 0.2,
+      rZero: 0.1,
       maxValue: 1,
       minValue: 0,
       ensembleN: 2,
