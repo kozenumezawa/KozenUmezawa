@@ -225,7 +225,7 @@ export default class PBVRenderer {
       this.setVertexCoords(tmpcoords, idx);
       this.setVertexValues(tmpvalues, idx);
       this.addPointsToScene(idx);
-      this.updateAllAttributes(params, idx);
+      this.updateTransferFunction(params, idx);
     });
     
     this.setNumberOfParticles(numberOfParticles);
@@ -394,14 +394,6 @@ export default class PBVRenderer {
       this.material[idx].uniforms.maxValue.value = max;
       this.material[idx].uniforms.minValue.value = min;
     });
-  }
-
-  updateAllAttributes (params, idx) {
-    this.updateTransferFunction(params, idx);
-  }
-
-  updateAllParticles (params) {
-    this.updateAllTransferFunction(params);
   }
 
 }

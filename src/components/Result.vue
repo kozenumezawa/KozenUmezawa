@@ -32,8 +32,8 @@ export default {
       }
     });
 
-    this.$on('apply', () => pbvr.updateAllParticles(this.$parent));
-    this.$on('reset', () => pbvr.updateAllParticles(this.$parent));
+    this.$on('apply', () => pbvr.updateAllTransferFunction(this.$parent));
+    this.$on('reset', () => pbvr.updateAllTransferFunction(this.$parent));
 
     document.getElementById('result').appendChild(pbvr.getDomElement());
 
