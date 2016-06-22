@@ -11,13 +11,16 @@
 //and exchange vertices number if it is wrong. (Incomplete)
 
 export default class prismCell {
-  constructor(v0, v1, v2, v3, v4, v5, s0, s1, s2, s3, s4, s5) {
+  constructor(v0, v1, v2, v3, v4, v5) {
     this.V = [ v0, v1, v2, v3, v4, v5 ];    //  coordinates
-    this.S = [ s0, s1, s2, s3, s4, s5 ];    //  scalar
     this.vertices = 6;
     this.volume = this.calculateVolume();
   }
 
+  setVertexScalar(s0, s1, s2, s3, s4, s5) {
+    this.S = [ s0, s1, s2, s3, s4, s5 ];    //  scalar
+  }
+  
   localToGlobal(local) {
     let x = 0;
     let y = 0;

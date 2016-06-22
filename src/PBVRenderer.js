@@ -9,7 +9,7 @@ import getEffectComposer from 'three-effectcomposer';
 const EffectComposer = getEffectComposer(THREE);
 import EnsembleAveragePass from 'three-ensemble-average-pass';
 
-import prismCell from './prism-cell';
+import prismCell from './pbvrlib/prism-cell';
 
 
 export default class PBVRenderer {
@@ -164,15 +164,8 @@ export default class PBVRenderer {
       const v3 = this.getCoord(coords, connect[ i + 3 ]);
       const v4 = this.getCoord(coords, connect[ i + 4 ]);
       const v5 = this.getCoord(coords, connect[ i + 5 ]);
-
-      const s0 = values[ connect[ i + 0 ] ];
-      const s1 = values[ connect[ i + 1 ] ];
-      const s2 = values[ connect[ i + 2 ] ];
-      const s3 = values[ connect[ i + 3 ] ];
-      const s4 = values[ connect[ i + 4 ] ];
-      const s5 = values[ connect[ i + 5 ] ];
-
-      const prism = new prismCell(v0, v1, v2, v3, v4, v5, s0, s1, s2, s3, s4, s5);
+      
+      const prism = new prismCell(v0, v1, v2, v3, v4, v5);
       
       //  calculate the number of particles in the prism.
       const N_particle_float = this.baseDensity * prism.volume;
@@ -208,7 +201,8 @@ export default class PBVRenderer {
         const s4 = values[connect[i + 4]];
         const s5 = values[connect[i + 5]];
 
-        const prism = new prismCell(v0, v1, v2, v3, v4, v5, s0, s1, s2, s3, s4, s5);
+        const prism = new prismCell(v0, v1, v2, v3, v4, v5);
+        prism.setVertexScalar(s0, s1, s2, s3, s4, s5);
 
         //  generate particles
         for(let j = 0; j < numberOfParticlesArray[cellNumber]; j++){
