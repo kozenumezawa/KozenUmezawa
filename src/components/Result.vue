@@ -32,17 +32,6 @@ export default {
       }
     });
 
-    this.$on('updateOpacityParams', () => {
-      if(this.$parent.applyImmediately){
-        pbvr.updateAllOpacityParams(this.$parent.alphaZero, this.$parent.rZero);
-      }
-    });
-
-    this.$on('updateEnsembleN', () => {
-      if(this.$parent.applyImmediately){
-        pbvr.updateEnsembleN(this.$parent.ensembleN);
-      }
-    });
     this.$on('apply', () => pbvr.updateAllParticles(this.$parent));
     this.$on('reset', () => pbvr.updateAllParticles(this.$parent));
 

@@ -6,8 +6,6 @@
     .column.column-40
       color
       opacity
-      params
-      ensemble
       buttons
   .unsupported(v-if="!supportWebGL")
     p: strong
@@ -24,28 +22,21 @@ import 'milligram';
 import Result  from './components/Result.vue';
 import Color   from './components/Color.vue';
 import Opacity  from './components/Opacity.vue';
-import Params  from './components/Params.vue';
 import Buttons from './components/Buttons.vue';
-import Ensemble from './components/Ensemble.vue';
 
 export default {
   components: {
     Result,
     Color,
     Opacity,
-    Params,
-    Ensemble,
     Buttons
   },
   data () {
     return {
       spectrum: [],
       opacity: [],
-      alphaZero: 0.2,
-      rZero: 0.1,
       maxValue: 1,
       minValue: 0,
-      ensembleN: 2,
       applyImmediately: true
     }
   },

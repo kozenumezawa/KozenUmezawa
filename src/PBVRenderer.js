@@ -9,13 +9,13 @@ import getEffectComposer from 'three-effectcomposer';
 const EffectComposer = getEffectComposer(THREE);
 import EnsembleAveragePass from 'three-ensemble-average-pass';
 
-import prismCell from './prismCell';
+import prismCell from './prism-cell';
 
 
 export default class PBVRenderer {
   constructor (width, height) {
     this.N_ENSEMBLE = 1;
-    
+
     this.animate = this.animate.bind(this);
 
     this.renderer = new THREE.WebGLRenderer();
@@ -60,7 +60,6 @@ export default class PBVRenderer {
     const maxDensity = 1 / (8 * rZero * rZero * rZero);
     this.maxAlpha = 1 - Math.exp(- Math.PI * rZero * rZero * maxDensity * delta_t);
 
-    console.log(this.baseDensity);
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
 
     //prepare kvsml with the same numver of N_ENSEMBLE
@@ -326,11 +325,6 @@ export default class PBVRenderer {
   }
 
 
-  updateOpacityParams (alphaZero, rZero, idx) {
-    this.material[idx].uniforms.alphaZero.value = alphaZero;
-    this.material[idx].uniforms.rZero.value = rZero;
-  }
-
   getTransferFunctionOpacity(opacity){
     const width = opacity.length;
     const height = 1;
@@ -403,23 +397,11 @@ export default class PBVRenderer {
   }
 
   updateAllAttributes (params, idx) {
-    this.updateOpacityParams(params.alphaZero, params.rZero, idx);
     this.updateTransferFunction(params, idx);
-  }
-
-  updateAllOpacityParams (alphaZero, rZero) {
-    this.scene.forEach((element, index) => {
-      this.material[index].uniforms.alphaZero.value = alphaZero;
-      this.material[index].uniforms.rZero.value = rZero;
-    });
   }
 
   updateAllParticles (params) {
     this.updateAllTransferFunction(params);
-    this.updateAllOpacityParams(params.alphaZero, params.rZero);
   }
 
-  updateEnsembleN (params) {
-    this.N_ENSEMBLE = params.ensembleN;
-  }
 }
