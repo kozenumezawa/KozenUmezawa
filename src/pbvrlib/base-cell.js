@@ -1,7 +1,7 @@
 //  baseCell class has some methods to realize interpolation of cells.
 //
 //  Some baseCell's methods are as follows:
-//    constructor()         : variables 'V', 'vertices', 'volume' are need to overwrite in sub class
+//    constructor()         : variables 'V', 'vertices' are need to overwrite in sub class
 //    interpolateScalar     : calculate scalar in local coordinates by using interpolation.
 
 //  The methods should be implemented are as follows:
@@ -15,7 +15,6 @@ export default class baseCell {
   constructor() {
     this.V = [];
     this.vertices = 0;
-    this.volume = 0;
   }
   
   localToGlobal(local) {

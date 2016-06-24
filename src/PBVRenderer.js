@@ -11,7 +11,6 @@ import EnsembleAveragePass from 'three-ensemble-average-pass';
 
 import prismCell from './pbvrlib/prism-cell';
 
-
 export default class PBVRenderer {
   constructor (width, height) {
     this.N_ENSEMBLE = 1;
@@ -166,9 +165,9 @@ export default class PBVRenderer {
       const v5 = this.getCoord(coords, connect[ i + 5 ]);
       
       const prism = new prismCell(v0, v1, v2, v3, v4, v5);
-      
+
       //  calculate the number of particles in the prism.
-      const N_particle_float = this.baseDensity * prism.volume;
+      const N_particle_float = this.baseDensity * prism.calculateVolume();
       let N_particle = Math.floor(N_particle_float);
       if (N_particle_float - N_particle > Math.random()) {
         N_particle++;

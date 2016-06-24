@@ -1,4 +1,4 @@
-// prism's vertices are defined as follows:
+//  prism's vertices are defined as follows:
 //        N2          N0=(0,0,1)  (=(p,q,r))
 //       / \          N1=(1,0,1)
 //      /  \          N2=(0,1,1)
@@ -7,8 +7,13 @@
 //    |     |         N5=(0,1,0)
 //    N3----N4
 //
-//So constructor have to check vertex's positional relation
-//and exchange vertices number if it is wrong. (Incomplete)
+//  So constructor have to check vertex's positional relation
+//  and exchange vertices number if it is wrong. (Incomplete)
+//
+//   This class has two functions to calculate a cell's volume.
+//  'calculateVolume' is faster than 'calculateVolumeUseJacobian' but
+//  'calculateVolume' has requirements. 
+//  Requirement: vertex V[0], V[1], V[2] configure a triangle and distance of V[0] and V[3] denotes height.
 
 import baseCell from './base-cell'
 
@@ -17,7 +22,6 @@ export default class prismCell extends baseCell{
     super();
     this.V = [ v0, v1, v2, v3, v4, v5 ];    //  coordinates
     this.vertices = 6;
-    this.volume = this.calculateVolume();
   }
 
   setVertexScalar(s0, s1, s2, s3, s4, s5) {
@@ -60,15 +64,37 @@ export default class prismCell extends baseCell{
   }
 
   calculateVolume() {
-    //Requirement: vertex V[0], V[1], V[2] configure a triangle and distance of V[0] and V[3] denotes height.
-    let a = [this.V[1][0] - this.V[0][0], this.V[1][1] - this.V[0][1], this.V[1][2] - this.V[0][2]];
-    let b = [this.V[2][0] - this.V[0][0], this.V[2][1] - this.V[0][1], this.V[2][2] - this.V[0][2]];
+    //  Requirement: vertex V[0], V[1], V[2] configure a triangle and distance of V[0] and V[3] denotes height.
+    const a = [this.V[1][0] - this.V[0][0], this.V[1][1] - this.V[0][1], this.V[1][2] - this.V[0][2]];
+    const b = [this.V[2][0] - this.V[0][0], this.V[2][1] - this.V[0][1], this.V[2][2] - this.V[0][2]];
 
-    let vectorProduct = this.vectorproduct(a, b);
-    let S1 = Math.sqrt(Math.pow(vectorProduct[0], 2) + Math.pow(vectorProduct[1], 2) + Math.pow(vectorProduct[2], 2))* 0.5;
+    const vectorProduct = this.vectorproduct(a, b);
+    const S1 = Math.sqrt(Math.pow(vectorProduct[0], 2) + Math.pow(vectorProduct[1], 2) + Math.pow(vectorProduct[2], 2))* 0.5;
     return S1 * this.distance(this.V[0], this.V[3]);
   }
 
+  calculateVolumeUseJacobian() {
+    const N = 9;
+    let P = [
+      [0.3, 0.3, 0.2],
+      [0.6, 0.3, 0.2],
+      [0.3, 0.6, 0.2],
+      [0.3, 0.3, 0.5],
+      [0.6, 0.3, 0.5],
+      [0.3, 0.6, 0.5],
+      [0.3, 0.3, 0.8],
+      [0.6, 0.3, 0.8],
+      [0.3, 0.6, 0.8]
+    ];
+    
+    let S = 0;
+    for(let i = 0; i < N; i++){
+      const J = this.jacobian(P[i]);
+      S += Math.abs(0.5 * this.determinant(J));
+    }
+    return S / N;
+  }
+  
   differentialFunction(local) {
     const p = local[0];
     const q = local[1];
