@@ -13,7 +13,7 @@ import prismCell from './pbvrlib/prism-cell';
 
 export default class PBVRenderer {
   constructor (width, height) {
-    this.N_ENSEMBLE = 1;
+    this.N_ENSEMBLE = 2;
 
     this.animate = this.animate.bind(this);
 
