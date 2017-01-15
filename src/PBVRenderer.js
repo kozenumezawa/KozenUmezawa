@@ -179,8 +179,8 @@ export default class PBVRenderer {
     //  generate particles
     this.scene.forEach((element, idx) => {
       const stopLength = connect.length - 5;
-      let tmpcoords = new Float32Array(numberOfParticles * 3);
-      let tmpvalues = new Float32Array(numberOfParticles);
+      let particle_coords = new Float32Array(numberOfParticles * 3);
+      let particle_values = new Float32Array(numberOfParticles);
 
       let valueIndex = 0;
       let coordIndex = 0;
@@ -206,17 +206,17 @@ export default class PBVRenderer {
         //  generate particles
         for(let j = 0; j < numberOfParticlesArray[cellNumber]; j++){
           const sample = prism.randomSampling();
-          tmpvalues[valueIndex++] = prism.interpolateScalar(sample);
+          particle_values[valueIndex++] = prism.interpolateScalar(sample);
 
-          const testcoords = prism.localToGlobal(sample);
-          tmpcoords[coordIndex++] = testcoords[0];
-          tmpcoords[coordIndex++] = testcoords[1];
-          tmpcoords[coordIndex++] = testcoords[2];
+          const global_coords = prism.localToGlobal(sample);
+          particle_coords[coordIndex++] = global_coords[0];
+          particle_coords[coordIndex++] = global_coords[1];
+          particle_coords[coordIndex++] = global_coords[2];
         }
         cellNumber++;
       }
-      this.setVertexCoords(tmpcoords, idx);
-      this.setVertexValues(tmpvalues, idx);
+      this.setVertexCoords(particle_coords, idx);
+      this.setVertexValues(particle_values, idx);
       this.addPointsToScene(idx);
       this.updateTransferFunction(params, idx);
     });
