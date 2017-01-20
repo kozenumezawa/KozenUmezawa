@@ -54,7 +54,7 @@ export default class PBVRenderer {
     }
 
     //calculate initial parameters
-    const delta_t = 0.005;
+    const delta_t = 0.05;
     this.baseDensity = - Math.log(1 - alphaZero) / (Math.PI * rZero * rZero * delta_t);
     const maxDensity = 1 / (8 * rZero * rZero * rZero);
     this.maxAlpha = 1 - Math.exp(- Math.PI * rZero * rZero * maxDensity * delta_t);
