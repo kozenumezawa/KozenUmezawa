@@ -106,7 +106,7 @@ export default class PBVRenderer {
   }
 
   getMaxValue () {
-    var maxValueArray = new Array(this.N_ENSEMBLE);
+    let maxValueArray = new Array(this.N_ENSEMBLE);
     for(let i=0; i<this.N_ENSEMBLE; i++){
       maxValueArray[i] = this.kvsml[i].maxValue;
     }
@@ -114,7 +114,7 @@ export default class PBVRenderer {
   }
 
   getMinValue () {
-    var minValueArray = new Array(this.N_ENSEMBLE);
+    let minValueArray = new Array(this.N_ENSEMBLE);
     for(let i=0; i<this.N_ENSEMBLE; i++){
       minValueArray[i] = this.kvsml[i].minValue;
     }
@@ -226,11 +226,10 @@ export default class PBVRenderer {
   }
   
   getCoord(data, idx) {
-    var result = [];
-    result[0] = data[idx * 3];
-    result[1] = data[idx * 3 + 1];
-    result[2] = data[idx * 3 + 2];
-    return result;
+    const x = data[idx * 3];
+    const y = data[idx * 3 + 1];
+    const z = data[idx * 3 + 2];
+    return [x, y, z];
   }
 
   addPointsToScene (idx) {
@@ -241,14 +240,14 @@ export default class PBVRenderer {
   getTransferFunctionOpacity(opacity){
     const width = opacity.length;
     const height = 1;
-    var data = new Float32Array(width * height);
+    let data = new Float32Array(width * height);
 
     for(let i=0; i<width; i++){
       data[i] = opacity[i];
     }
 
     //use THREE.AlphaFormat because opacity is one dimension.
-    var texture = new THREE.DataTexture(data, width, height, THREE.AlphaFormat, THREE.FloatType);
+    let texture = new THREE.DataTexture(data, width, height, THREE.AlphaFormat, THREE.FloatType);
     texture.generateMipmaps = false;
     texture.minFilter = THREE.LinearFilter;
     texture.magFilter = THREE.LinearFilter;
@@ -261,7 +260,7 @@ export default class PBVRenderer {
   getTransferFunctionColor(spectrum){
     const width = spectrum.length;
     const height = 1;
-    var data = new Float32Array(width * height * 4);
+    let data = new Float32Array(width * height * 4);
 
     //spectrum is two dimension array. spectrum[][4]
     for(let i=0; i<width; i++){
@@ -272,7 +271,7 @@ export default class PBVRenderer {
     }
 
     //use THREE.RGBAFormat because spectrum is four dimensions.
-    var texture = new THREE.DataTexture(data, width, height, THREE.RGBAFormat, THREE.FloatType);
+    let texture = new THREE.DataTexture(data, width, height, THREE.RGBAFormat, THREE.FloatType);
     texture.generateMipmaps = false;
     texture.minFilter = THREE.LinearFilter;
     texture.magFilter = THREE.LinearFilter;
