@@ -2,8 +2,8 @@
 .title Color palette
 .row
   .column.column-80
-    canvas#palette(@mousemove="pickColor" @mousedown="onMouseDown" @mouseup="onMouseUp"
-                   @mouseleave="onMouseUp" width="350" height="128")
+    canvas#palette(@mousedown="startDrag" @mousemove="changeColor" @click="changeColor"
+      @mouseup="stopDrag" @mouseleave="stopDrag" width="350" height="128")
   .column.column-20
     .block(v-bind:style="{background: blockColor}")
     .rgb
@@ -12,8 +12,8 @@
       span!= "B: {{ currentColor[2] }}"
 
 .title Spectrum
-canvas#spectrum(@mousemove="updateSpectrum" @mousedown="onMouseDown" @mouseup="onMouseUp"
-                @mouseleave="onMouseUp" width="100" height="1" debounce="500")
+canvas#spectrum(@mousedown="startDrag" @mousemove="changeSpectrum" @click="changeSpectrum"
+  @mouseup="stopDrag" @mouseleave="stopDrag" width="100" height="1" debounce="500")
 </template>
 
 <script>
@@ -21,13 +21,12 @@ import _ from 'lodash';
 
 import helper from '../helper';
 
-let imgData = [];
-let isDown = false;
-
 export default {
   data () {
     return {
-      currentColor: new Uint8ClampedArray([255, 0, 0])
+      currentColor: new Uint8ClampedArray([255, 0, 0]),
+      dragging: false,
+      imgData: []
     }
   },
   computed: {
@@ -45,18 +44,19 @@ export default {
     }
   },
   ready () {
-    this.initPalette();
-    this.initSpectrum();
-    this.applySpectrum();
+    this.reset();
 
     this.$on('reset', () => {
-      this.initPalette();
-      this.initSpectrum();
-      this.applySpectrum();
+      this.reset();
       this.$parent.emit('updateVertexColors');
     });
   },
   methods: {
+    reset() {
+      this.initPalette();
+      this.initSpectrum();
+      this.applySpectrum();
+    },
     initPalette () {
       this.currentColor = new Uint8ClampedArray([255, 0, 0]);
       const ctx = this.palette.getContext('2d');
@@ -64,7 +64,7 @@ export default {
       img.src = './assets/img/palette.png';
       img.onload = () => {
         ctx.drawImage(img, 0, 0);
-        imgData = ctx.getImageData(0, 0, this.palette.width, this.palette.height).data;
+        this.imgData = ctx.getImageData(0, 0, this.palette.width, this.palette.height).data;
       }
     },
     initSpectrum () {
@@ -75,14 +75,8 @@ export default {
       ctx.fillStyle = grd;
       ctx.fill();
     },
-    pickColor (e) {
-      if(e.buttons === 0 || !isDown) return;
-      const pos = helper.getClickedPoint(e);
-      const i = Math.floor(pos.y * this.palette.width + pos.x) * 4;
-      this.currentColor = imgData.slice(i, i + 3);
-    },
-    updateSpectrum (e) {
-      if(e.buttons === 0 || !isDown) return;
+    changeSpectrum (e) {
+      if (!this.dragging && e.type !== 'click') return;
       const ctx = this.spectrum.getContext('2d');
       const pos = helper.getClickedPoint(e);
       ctx.lineWidth = 3;
@@ -98,12 +92,20 @@ export default {
       const dump = this.spectrum.getContext('2d').getImageData(0, 0, 100, 1).data;
       this.$parent.spectrum = _(dump).map(d => d/0xff).chunk(4).value();
     },
-    onMouseDown () {
-      isDown = true;
+    startDrag() {
+      this.dragging = true;
     },
-    onMouseUp () {
-      isDown = false;
-      this.$parent.emit('updateVertexColors');
+    changeColor(e) {
+      if (!this.dragging && e.type !== 'click') return;
+      const pos = helper.getClickedPoint(e);
+      const i = Math.floor(pos.y * this.palette.width + pos.x) * 4;
+      this.currentColor = this.imgData.slice(i, i + 3);
+    },
+    stopDrag() {
+      if(this.dragging) {
+        this.dragging = false;
+        this.$parent.emit('updateVertexColors');
+      }
     }
   }
 };
