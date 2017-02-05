@@ -19,32 +19,26 @@
 import 'normalize.css/normalize.css';
 import 'milligram';
 
-import Result  from './components/Result.vue';
-import Color   from './components/Color.vue';
-import Opacity  from './components/Opacity.vue';
-import Buttons from './components/Buttons.vue';
-
 export default {
   components: {
-    Result,
-    Color,
-    Opacity,
-    Buttons
+    result: require('./components/result.vue'),
+    color: require('./components/color.vue'),
+    opacity: require('./components/opacity.vue'),
+    buttons: require('./components/buttons.vue')
   },
   data () {
     return {
       spectrum: [],
       opacity: [],
       maxValue: 1,
-      minValue: 0,
-      applyImmediately: true
-    }
+      minValue: 0
+    };
   },
   computed: {
     supportWebGL: () => {
       try {
         const c = document.createElement('canvas');
-        return !! (window.WebGLRenderingContext && (c.getContext('webgl') || c.getContext('experimental-webgl')));
+        return !!(window.WebGLRenderingContext && (c.getContext('webgl') || c.getContext('experimental-webgl')));
       } catch (e) {
         return false;
       }

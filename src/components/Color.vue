@@ -13,7 +13,7 @@
 
 .title Spectrum
 canvas#spectrum(@mousedown="startDrag" @mousemove="changeSpectrum" @click="changeSpectrum"
-  @mouseup="stopDrag" @mouseleave="stopDrag" width="100" height="1" debounce="500")
+  @mouseup="stopDrag" @mouseleave="stopDrag" width="100" height="1")
 </template>
 
 <script>
@@ -27,15 +27,15 @@ export default {
       currentColor: new Uint8ClampedArray([255, 0, 0]),
       dragging: false,
       imgData: []
-    }
+    };
   },
   computed: {
     palette: () => document.querySelector('#palette'),
     spectrum: () => document.querySelector('#spectrum'),
-    blockColor: function(){
+    blockColor() {
       return `rgba(${_.join(this.currentColor, ',')}, 1.0)`;
     },
-    rgb: function(){
+    rgb() {
       return _.join([
         `R: ${this.currentColor[0]}`,
         `G: ${this.currentColor[1]}`,
@@ -65,7 +65,7 @@ export default {
       img.onload = () => {
         ctx.drawImage(img, 0, 0);
         this.imgData = ctx.getImageData(0, 0, this.palette.width, this.palette.height).data;
-      }
+      };
     },
     initSpectrum () {
       const ctx = this.spectrum.getContext('2d');
@@ -82,7 +82,7 @@ export default {
       ctx.lineWidth = 3;
       ctx.strokeStyle = `rgba(${_.join(this.currentColor, ',')}, 0.7)`;
       ctx.beginPath();
-      ctx.moveTo(pos.x / ctx.canvas.clientWidth * 100, 0)
+      ctx.moveTo(pos.x / ctx.canvas.clientWidth * 100, 0);
       ctx.lineTo(pos.x / ctx.canvas.clientWidth * 100, 1);
       ctx.stroke();
       ctx.closePath();

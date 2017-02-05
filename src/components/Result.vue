@@ -11,8 +11,8 @@
 </template>
 
 <script>
-import request from 'axios';
-request.defaults.responseType = 'arraybuffer';
+import axios from 'axios';
+axios.defaults.responseType = 'arraybuffer';
 
 import PBVRenderer from '../PBVRenderer';
 
@@ -20,45 +20,36 @@ const pbvr = new PBVRenderer(640, 640);
 
 export default {
   ready () {
-    this.$on('updateVertexColors', () => {
-      if(this.$parent.applyImmediately){
-        pbvr.updateAllTransferFunction(this.$parent);
-      }
-    });
-
-    this.$on('updateOpacity', () => {
-      if(this.$parent.applyImmediately){
-        pbvr.updateAllTransferFunction(this.$parent);
-      }
-    });
-
-    this.$on('apply', () => pbvr.updateAllTransferFunction(this.$parent));
+    this.$on('updateVertexColors', () => pbvr.updateAllTransferFunction(this.$parent));
+    this.$on('updateOpacity', () => pbvr.updateAllTransferFunction(this.$parent));
     this.$on('reset', () => pbvr.updateAllTransferFunction(this.$parent));
 
     document.getElementById('result').appendChild(pbvr.getDomElement());
 
     this.retrieveSampleKvsml();
-
-    pbvr.animate();
   },
   data () {
     return {
       minValue: '-',
       maxValue: '-',
       framesPerSecond: 0,
-      numberOfVertices: 0,
-    }
+      numberOfVertices: 0
+    };
   },
   methods: {
-    retrieveSampleKvsml () { // TODO: This block should be replaced with OPeNDAP request if needed.
-      let coords, values, connect;
-      request.get('./assets/kvsml/51000_coord.dat')
-      .then(res => coords = res.data)
-      .then(() => request.get('./assets/kvsml/51000_value.dat'))
-      .then(res => values = res.data)
-      .then(() => request.get('./assets/kvsml/51000_connect.dat'))
-      .then(res => connect = res.data)
-      .then(() => { pbvr.generateParticlesFromPrism(new Float32Array(coords), new Float32Array(values), new Uint32Array(connect), this.$parent)})
+    retrieveSampleKvsml () {
+      Promise.all([
+        axios.get('./assets/kvsml/51000_coord.dat'),
+        axios.get('./assets/kvsml/51000_value.dat'),
+        axios.get('./assets/kvsml/51000_connect.dat')
+      ])
+      .then(res => {
+        const coords = new Float32Array(res[0].data);
+        const values = new Float32Array(res[1].data);
+        const connects = new Uint32Array(res[2].data);
+        pbvr.generateParticlesFromPrism(coords, values, connects, this.$parent);
+        pbvr.animate();
+      })
       .then(this.updateStats);
     },
     updateStats () {
@@ -73,5 +64,5 @@ export default {
       }, 1000);
     }
   }
-}
+};
 </script>

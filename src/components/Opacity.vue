@@ -3,10 +3,8 @@
 canvas#opacity(width="430" height="200" @mousemove="onMouseMove" @mousedown="onMouseDown"
               @mouseup="onMouseUp" @mouseleave="onMouseUp")
 .row
-  .column.column-50
-    {{ minValue }}
-  .column.column-60
-    .float-right: {{ maxValue }}
+  .column.column-50 {{ minValue }}
+  .column.column-60: .float-right {{ maxValue }}
 </template>
 
 <script>

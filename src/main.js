@@ -1,9 +1,7 @@
 import Vue from 'vue';
-import App from './App.vue';
-
-Vue.config.debug = true;
+import app from './app.vue';
 
 new Vue({
   el: 'body',
-  components: { App }
+  components: { app }
 });

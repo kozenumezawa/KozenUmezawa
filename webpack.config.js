@@ -16,38 +16,27 @@ module.exports = {
   },
   module: {
     loaders: [
-      {test: /\.vue$/, loader: 'vue' },
-      {test: /\.css$/, loader: 'style!css' },
-      {test: /\.js$/,  loader: 'babel', exclude: /node_modules/},
-      {test: /\.(png|jpg|gif|svg)$/, loader: 'url', query: {
-        limit: 10000,
-        name: '[name].[ext]?[hash]'
-      }}
+      {test: /\.vue$/,  loader: 'vue' },
+      {test: /\.css$/,  loader: 'style!css' },
+      {test: /\.js$/,   loader: 'babel', exclude: /node_modules/},
+      {test: /\.glsl$/, loader: 'webpack-glsl'}
     ]
   },
   devServer: {
     historyApiFallback: true,
     noInfo: true
   },
-  devtool: 'eval-source-map'
-}
+  devtool: 'inline-source-map'
+};
 
 if (process.env.NODE_ENV === 'production') {
   module.exports.devtool = 'source-map';
   module.exports.plugins = (module.exports.plugins || []).concat([
-    new webpack.DefinePlugin({
-      'process.env': {
-        NODE_ENV: '"production"'
-      }
-    }),
-    new webpack.optimize.UglifyJsPlugin({
-      compress: {
-        warnings: false
-      }
-    }),
+    new webpack.DefinePlugin({'process.env': {NODE_ENV: '"production"'}}),
+    new webpack.optimize.UglifyJsPlugin({compress: {warnings: false}}),
     new webpack.optimize.OccurenceOrderPlugin(),
     new CopyWebpackPlugin([
       {from: './assets', to: './assets'}
     ])
   ]);
-};
+}
