@@ -1,4 +1,4 @@
-<template lang="jade">
+<template lang="pug">
 .title Result
 #result
 .row
@@ -46,7 +46,7 @@ export default {
       .then(res => {
         const coords = new Float32Array(res[0].data);
         const values = new Float32Array(res[1].data);
-        const connects = new Uint32Array(res[2].data);
+        const connects = (new Uint32Array(res[2].data)).slice(0, 600000);
         pbvr.generateParticlesFromPrism(coords, values, connects, this.$parent);
         pbvr.animate();
       })

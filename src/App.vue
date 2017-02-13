@@ -1,4 +1,4 @@
-<template lang="jade">
+<template lang="pug">
 .container
   .row(v-if="supportWebGL")
     .column.column-60

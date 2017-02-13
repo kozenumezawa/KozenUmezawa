@@ -1,4 +1,4 @@
-<template lang="jade">
+<template lang="pug">
 .title Opacity
 canvas#opacity(width="430" height="200" @mousemove="onMouseMove" @mousedown="onMouseDown"
               @mouseup="onMouseUp" @mouseleave="onMouseUp")

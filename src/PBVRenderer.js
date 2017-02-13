@@ -1,7 +1,7 @@
 import _ from 'lodash';
 
-import THREE from 'three';
 import Stats from 'stats.js';
+const THREE = require('three');
 const OrbitControls = require('three-orbit-controls')(THREE);
 
 import getEffectComposer from 'three-effectcomposer';

@@ -11,15 +11,17 @@ module.exports = {
     publicPath: '/dist/',
     filename: 'build.js'
   },
-  resolveLoader: {
-    root: path.join(__dirname, 'node_modules'),
+  resolve: {
+    modules: [
+      path.join(__dirname, 'node_modules')
+    ]
   },
   module: {
-    loaders: [
-      {test: /\.vue$/,  loader: 'vue' },
-      {test: /\.css$/,  loader: 'style!css' },
-      {test: /\.js$/,   loader: 'babel', exclude: /node_modules/},
-      {test: /\.glsl$/, loader: 'webpack-glsl'}
+    rules: [
+      {test: /\.vue$/,  use: 'vue-loader' },
+      {test: /\.css$/,  use: ['style-loader', 'css-loader'] },
+      {test: /\.js$/,   use: 'babel-loader', exclude: /node_modules/},
+      {test: /\.glsl$/, use: 'webpack-glsl-loader'}
     ]
   },
   devServer: {

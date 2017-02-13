@@ -1,4 +1,4 @@
-<template lang="jade">
+<template lang="pug">
 ._buttons
   .row
     .column.column-30: a.button(@click="emit('reset')") Reset

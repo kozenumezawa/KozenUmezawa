@@ -1,4 +1,4 @@
-<template lang="jade">
+<template lang="pug">
 .title Color palette
 .row
   .column.column-80
