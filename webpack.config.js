@@ -21,7 +21,7 @@ module.exports = {
       {test: /\.vue$/,  use: 'vue-loader' },
       {test: /\.css$/,  use: ['style-loader', 'css-loader'] },
       {test: /\.js$/,   use: 'babel-loader', exclude: /node_modules/},
-      {test: /\.glsl$/, use: 'webpack-glsl-loader'}
+      {test: /\.(frag|vert)$/, use: 'webpack-glsl-loader'}
     ]
   },
   devServer: {
