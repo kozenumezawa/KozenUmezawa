@@ -10,170 +10,117 @@ canvas#opacity(width="430" height="200" @mousemove="onMouseMove" @mousedown="onM
 <script>
 import _ from 'lodash';
 import spline from 'cardinal-spline-js';
-import SplineInterpolator from 'spline-interpolator';
 
 import helper from '../helper';
 
-let pIndex = -1;
-let isDown = false;
-
-let opacities = [[0, 180], [215, 100], [430, 20]]; //first position
-let line = getInitialCurvePoints();
-
-function getInitialCurvePoints(){
-  let x = [];
-  let y = [];
-  opacities.forEach((element, idx) => {
-    x.push(opacities[idx][0]);
-    y.push(opacities[idx][1]);
-  });
-  const interpolator = new SplineInterpolator(x, y);
-  return interpolator.curve(100);
-}
-
-
-function updateLine(position){
-  let idx;
-  for(idx = 0; opacities[idx][0] < position[0]; idx++);
-
-  const x1 = opacities[idx-1][0];
-  const y1 = opacities[idx-1][1];
-  const x2 = opacities[idx+1][0];
-  const y2 = opacities[idx+1][1];
-
-  let x = [x1, position[0], x2];
-  let y = [y1, position[1], y2];
-  const interpolator = new SplineInterpolator(x, y);
-
-  //update the line between x1 and x2
-  for(idx = 0; line[idx][0] < x2; idx++){
-    if(line[idx][0] > x1){
-      const newY = interpolator.interpolate(line[idx][0]);
-      if(newY > opacity.height){
-        line[idx][1] = opacity.height;
-      }else if(newY < 0){
-        line[idx][1] = opacity.height * 0.00002;  //need 0.00002 to prevent an error
-      }else{
-        line[idx][1] = newY;
-      }
-    }
-  }
-}
-
 export default {
-  data () {
-    return {
-      maxValue: '-',
-      minValue: '-'
+  data: () => ({
+    currentOpacity: [[0, 180], [215, 100], [430, 20]],
+    pIndex: -1,
+    isDown: false,
+  }),
+  computed: {
+    opacity() {
+      return document.getElementById('opacity');
+    },
+    context() {
+      return document.getElementById('opacity').getContext('2d');
+    },
+    getCurvePoints() {
+      return _.chunk(spline.getCurvePoints(_.flatten(this.currentOpacity), 0.2, 25, false), 2);
     }
   },
-  computed: {
-    opacity: () => document.getElementById('opacity'),
-    context: () => document.getElementById('opacity').getContext('2d'),
-  },
-  ready () {
+  ready() {
     this.initGraph();
-    this.$on('reset', () => {
-      opacities = [[0, 180], [215, 100], [430, 20]];
-      line = getInitialCurvePoints();
-      this.initGraph();
-      this.$parent.emit('updateOpacity');
-    });
 
-    this.$on('updateValue', () => {
-      this.maxValue = this.$parent.maxValue;
-      this.minValue = this.$parent.minValue;
+    this.$on('reset', () => {
+      this.currentOpacity = [[0, 180], [215, 100], [430, 20]];
+      this.initGraph();
+      this.$parent.emit('updateVertexOpacity');
     });
   },
   methods: {
-    initGraph () {
-      this.context.clearRect(0, 0, opacity.width, opacity.height);
-
+    initGraph() {
+      this.context.clearRect(0, 0, this.opacity.width, this.opacity.height);
+      this.drawGrid();
       this.drawLine();
       this.drawHandles();
-      this.drawGrid();
+
       // Additional 0.0001 is used to prevent divergence of particle size
-      // The range of opacity is [0.0, 1.0]
-      this.$parent.opacity = _.map(line, pt => 1.00001 - pt[1] / opacity.height);
+      this.$parent.opacity = _.map(this.getCurvePoints, pt => 1.00001 - pt[1] / this.opacity.height);
     },
-    drawLine () {
-      const s = line;
+    drawGrid() {
+      this.context.lineWidth = 0.3;
+      this.context.strokeStyle = '#202020';
+      this.context.beginPath();
+      this.context.moveTo(0, this.opacity.height / 2);
+      this.context.lineTo(this.opacity.width, this.opacity.height / 2);
+      this.context.stroke();
+      this.context.beginPath();
+      this.context.moveTo(this.opacity.width / 3, 0);
+      this.context.lineTo(this.opacity.width / 3, this.opacity.height);
+      this.context.stroke();
+      this.context.beginPath();
+      this.context.moveTo(this.opacity.width / 3 * 2, 0);
+      this.context.lineTo(this.opacity.width / 3 * 2, this.opacity.height);
+      this.context.stroke();
+      this.context.strokeStyle = '#000000';
+      this.context.lineWidth = 1.0;
+    },
+    drawLine() {
+      const s = this.getCurvePoints;
       this.context.beginPath();
       for(let i=0; i < s.length - 1; i++) {
         this.context.lineTo(s[i][0], s[i][1]);
       }
       this.context.stroke();
     },
-    drawHandles () {
+    drawHandles() {
+      this.context.strokeStyle = 'black';
       this.context.beginPath();
-      for(let i=1; i < opacities.length - 1; i++){
-        this.context.rect(opacities[i][0] - 3, opacities[i][1] - 3, 6, 6);
+      for(let i=1; i < this.currentOpacity.length - 1; i++){
+        this.context.rect(this.currentOpacity[i][0] - 3, this.currentOpacity[i][1] - 3, 6, 6);
       }
       this.context.stroke();
     },
-    drawGrid () {
-      this.context.lineWidth = 0.3;
-      this.context.strokeStyle = '#202020';
-
-      this.context.beginPath();
-      this.context.moveTo(0, opacity.height / 2);
-      this.context.lineTo(opacity.width, opacity.height / 2);
-      this.context.stroke();
-
-      this.context.beginPath();
-      this.context.moveTo(opacity.width / 3, 0);
-      this.context.lineTo(opacity.width / 3, opacity.height);
-      this.context.stroke();
-
-      this.context.beginPath();
-      this.context.moveTo(opacity.width / 3 * 2, 0);
-      this.context.lineTo(opacity.width / 3 * 2, opacity.height);
-      this.context.stroke();
-
-      this.context.strokeStyle = '#000000';
-      this.context.lineWidth = 1.0;
-    },
-    onMouseDown (e) {
+    onMouseDown(e) {
       const pos = helper.getClickedPoint(e);
 
-      pIndex = -1;
-      isDown = false;
+      this.pIndex = -1;
+      this.isDown = false;
 
-  		for(let i=0; i < opacities.length; i++) {
-        if(Math.abs(pos.x - opacities[i][0]) < 10 && Math.abs(pos.y - opacities[i][1] < 10)){
-          pIndex = i;
-          isDown = true;
+      for(let i=0; i < this.currentOpacity.length; i++) {
+        if(Math.abs(pos.x - this.currentOpacity[i][0]) < 10 && Math.abs(pos.y - this.currentOpacity[i][1] < 10)){
+          this.pIndex = i;
+          this.isDown = true;
           return;
         }
-  		}
+      }
 
-      const s = line;
+      const s = this.getCurvePoints;
       const newHandlePos = s.find(pt => Math.abs(pt[0] - pos.x) < 10 && Math.abs(pt[1] - pos.y) < 10);
 
       if(!newHandlePos) return;
 
-      opacities = opacities.concat([newHandlePos]).sort((a, b) => a[0] - b[0]);
+      this.currentOpacity = this.currentOpacity.concat([newHandlePos]).sort((a, b) => a[0] - b[0]);
 
       this.onMouseDown(e);
       this.initGraph();
     },
-    onMouseMove (e) {
-      if(!isDown || pIndex === 0 || pIndex === opacities.length - 1) return;
+    onMouseMove(e) {
+      if(!this.isDown || this.pIndex === 0 || this.pIndex === this.currentOpacity.length - 1) return;
 
       const pos = helper.getClickedPoint(e);
-			opacities[pIndex] = [pos.x, pos.y];
+			this.currentOpacity[this.pIndex] = [pos.x, pos.y];
 
-      const newLength = opacities.length;
       // Remove the point if its position is overrapped with another point
-      opacities = _.uniqWith(opacities.sort((a, b) => a[0] - b[0]), (a, b) => Math.abs(a[0] - b[0]) < 1);
-      if(newLength == opacities.length){
-        updateLine([pos.x, pos.y]);
-      }
+      this.currentOpacity = _.uniqWith(this.currentOpacity.sort((a, b) => a[0] - b[0]), (a, b) => Math.abs(a[0] - b[0]) < 1);
+
       this.initGraph();
     },
-    onMouseUp () {
-      isDown = false;
-      this.$parent.emit('updateOpacity');
+    onMouseUp() {
+      this.isDown = false;
+      this.$parent.emit('updateVertexOpacity');
     }
   }
 };
