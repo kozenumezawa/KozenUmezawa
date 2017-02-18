@@ -23,23 +23,24 @@
     "cross-env": "^3.1.4",
     "css-loader": "^0.26.1",
     "file-loader": "^0.10.0",
-    "pug": "^2.0.0-beta11",
     "lodash": "^4.6.1",
     "milligram": "^1.3.0",
     "normalize.css": "^5.0.0",
+    "pug": "^2.0.0-beta11",
+    "smooth.js": "github:jordanhaven/Smooth.js",
     "stats.js": "0.17.0",
     "style-loader": "^0.13.1",
+    "three": "^0.84.0",
     "three-effectcomposer": "0.0.1",
     "three-ensemble-average-pass": "0.0.1",
     "three-orbit-controls": "^82.1.0",
-    "three": "^0.84.0",
     "url-loader": "^0.5.7",
     "vue-hot-reload-api": "^1.3.3",
     "vue-html-loader": "^1.2.0",
     "vue-loader": "^8.7.0",
     "vue-style-loader": "^1.0.0",
+    "webpack": "^2.2.1",
     "webpack-dev-server": "^2.3.0",
-    "webpack-glsl-loader": "^1.0.1",
-    "webpack": "^2.2.1"
+    "webpack-glsl-loader": "^1.0.1"
   }
 }

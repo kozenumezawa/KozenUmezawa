@@ -16,7 +16,7 @@ export default class baseCell {
     this.V = [];
     this.vertices = 0;
   }
-  
+
   localToGlobal(local) {
     let x = 0;
     let y = 0;
@@ -36,19 +36,19 @@ export default class baseCell {
 
   globalToLocal (global) {
     const E = 0.0001;    //Convergence condition
-    let X = global;
-    let x0 = [0.5, 0.5 * global[1] / global[0], 0.5 * global[2] / global[0]];   //  initial value of local coordinates
+    const X = global;
+    const x0 = [0.5, 0.5 * global[1] / global[0], 0.5 * global[2] / global[0]];   //  initial value of local coordinates
 
     const maxLoop = 10;
     let i;
     for(i = 0; i < maxLoop; i++){
-      let X0 = this.localToGlobal(x0);
-      let dX = this.minus_1_1(X, X0);
-      let J = this.jacobian(x0);
-      let dx = this.multiply_3_1(this.inverse(this.transpose(J)), dX);  //  CAUTION: we have to transpose
+      const X0 = this.localToGlobal(x0);
+      const dX = this.minus_1_1(X, X0);
+      const J = this.jacobian(x0);
+      const dx = this.multiply_3_1(this.inverse(this.transpose(J)), dX);  //  CAUTION: we have to transpose
 
       if(Math.sqrt(dx[0] * dx[0] + dx[1] * dx[1] + dx[2] * dx[2]) < E)
-        break;
+      break;
 
       x0[0] += dx[0];
       x0[1] += dx[1];
@@ -59,9 +59,9 @@ export default class baseCell {
     }
     return x0;
   }
-  
+
   interpolateScalar(local) {
-    let N = this.getInterpolationFunctions(local);
+    const N = this.getInterpolationFunctions(local);
 
     let S = 0;
     for(let i = 0; i < this.vertices; i++){
@@ -70,8 +70,18 @@ export default class baseCell {
     return S;
   }
 
+  interpolateAlpha(local) {
+    const N = this.getInterpolationFunctions(local);
+
+    let S = 0;
+    for(let i = 0; i < this.vertices; i++){
+      S += N[i] * this.alpha[i];
+    }
+    return S;
+  }
+
   jacobian(local) {
-    let dN = this.differentialFunction(local);  //dN = [dNdp[6], dNdq[6], dNdr[6]]
+    const dN = this.differentialFunction(local);  //dN = [dNdp[6], dNdq[6], dNdr[6]]
 
     let dxdp = 0;
     let dydp = 0;
@@ -103,11 +113,9 @@ export default class baseCell {
     const jacobiMatrix = [[dxdp, dydp, dzdp], [dxdq, dydq, dzdq], [dxdr, dydr, dzdr]];
     return jacobiMatrix;
   }
-  
+
   distance(A, B) {
-    let r;
-    r = Math.sqrt(Math.pow(A[0] - B[0], 2) + Math.pow(A[1] - B[1], 2) + Math.pow(A[2] - B[2], 2));
-    return r;
+    return Math.sqrt(Math.pow(A[0] - B[0], 2) + Math.pow(A[1] - B[1], 2) + Math.pow(A[2] - B[2], 2));
   }
 
   determinant(A) {
@@ -124,7 +132,7 @@ export default class baseCell {
 
 
   inverse(A) {
-    let Ainv = [];
+    const Ainv = [];
     Ainv[0] = new Array(3);
     Ainv[1] = new Array(3);
     Ainv[2] = new Array(3);
@@ -146,7 +154,7 @@ export default class baseCell {
   }
 
   transpose(A) {
-    let At = [];
+    const At = [];
     At[0] = new Array(3);
     At[1] = new Array(3);
     At[2] = new Array(3);
@@ -167,7 +175,7 @@ export default class baseCell {
   }
 
   multiply_3_1(A, B) {
-    let C = new Array(3);
+    const C = new Array(3);
     C[0] = A[0][0] * B[0] + A[0][1] * B[1] + A[0][2] * B[2];
     C[1] = A[1][0] * B[0] + A[1][1] * B[1] + A[1][2] * B[2];
     C[2] = A[2][0] * B[0] + A[2][1] * B[1] + A[2][2] * B[2];
@@ -175,18 +183,17 @@ export default class baseCell {
   }
 
   minus_1_1(A, B) {
-    let C = new Array(3);
+    const C = new Array(3);
     C[0] = A[0] - B[0];
     C[1] = A[1] - B[1];
     C[2] = A[2] - B[2];
     return C;
   }
-  
+
   vectorproduct(A, B) {
-    let C = [A[1] * B[2] - A[2] * B[1],
-             A[2] * B[0] - A[0] * B[2],
-             A[0] * B[1] - A[1] * B[0]];
+    const C = [A[1] * B[2] - A[2] * B[1],
+    A[2] * B[0] - A[0] * B[2],
+    A[0] * B[1] - A[1] * B[0]];
     return C;
   }
 }
-

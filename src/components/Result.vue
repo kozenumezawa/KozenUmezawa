@@ -20,12 +20,10 @@ const pbvr = new PBVRenderer(640, 640);
 
 export default {
   ready () {
-    this.$on('updateVertexColors', () => pbvr.updateAllTransferFunction(this.$parent));
-    this.$on('updateOpacity', () => pbvr.updateAllTransferFunction(this.$parent));
-    this.$on('reset', () => pbvr.updateAllTransferFunction(this.$parent));
-
-    document.getElementById('result').appendChild(pbvr.getDomElement());
-
+    this.$on('updateVertexColors', () => pbvr.updateTransferFunction(this.$parent));
+    this.$on('updateVertexOpacity', () => pbvr.updateTransferFunction(this.$parent));
+    this.$on('reset', () => pbvr.updateTransferFunction(this.$parent));
+    document.getElementById('result').appendChild(pbvr.renderer.domElement);
     this.retrieveSampleKvsml();
   },
   data () {
@@ -46,18 +44,18 @@ export default {
       .then(res => {
         const coords = new Float32Array(res[0].data);
         const values = new Float32Array(res[1].data);
-        const connects = (new Uint32Array(res[2].data)).slice(0, 600000);
+        const connects = new Uint32Array(res[2].data);
+        this.numberOfVertices = values.length;
         pbvr.generateParticlesFromPrism(coords, values, connects, this.$parent);
         pbvr.animate();
       })
       .then(this.updateStats);
     },
     updateStats () {
-      this.minValue = Math.floor(pbvr.getMinValue() * 100) / 100;
-      this.maxValue = Math.floor(pbvr.getMaxValue() * 100) / 100;
+      this.minValue = Math.floor(pbvr.minValue * 100) / 100;
+      this.maxValue = Math.floor(pbvr.maxValue * 100) / 100;
       this.$parent.minValue = this.minValue;
       this.$parent.maxValue = this.maxValue;
-      this.numberOfVertices = pbvr.getNumberOfVertices();
       this.$parent.emit('updateValue');
       setInterval(() => {
         this.framesPerSecond = pbvr.getFramesPerSecond();

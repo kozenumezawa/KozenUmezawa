@@ -13,32 +13,28 @@ import helper from './helper';
 
 export default class PBVRenderer {
   constructor (width, height) {
-    this.N = 2; // emsemble
+    const N = 1; // emsemble
     this.deltaT = 0.05;
-    this.alphaZero = 0.2;
-    this.rZero = 0.1;
-
-    this.animate = this.animate.bind(this);
+    this.rZero = 0.02;
+    this.maxValue = 0;
+    this.minValue = 1;
 
     this.renderer = new THREE.WebGLRenderer();
     this.renderer.setPixelRatio(helper.getPixelRatio());
     this.renderer.setSize(width, height);
 
-    this.stats = new Stats();
-
     this.camera = new THREE.PerspectiveCamera(45, 1, 1, 1000);
     this.camera.position.z = 70;
 
-    //prepare points and scene with the same number of N
-    this.geometry = _.range(this.N).map(i => new THREE.BufferGeometry());
-    this.material = _.range(this.N).map(i => this.getShaderMaterialInstance());
-    this.points = _.range(this.N).map(i => new THREE.Points(this.geometry[i], this.material[i]));
-    this.scene = _.range(this.N).map(i => new THREE.Scene());
-    this.kvsml = _.range(this.N).map(i => ({maxValue: 0, minValue: 1}));
+    this.geometries = Array(N).fill(new THREE.BufferGeometry());
+    this.materials = Array(N).fill(this.getShaderMaterialInstance());
+    this.scenes = Array(N).fill(new THREE.Scene());
 
     this.postProcess();
 
+    this.animate = this.animate.bind(this);
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+    this.stats = new Stats();
   }
 
   animate () {
@@ -51,7 +47,6 @@ export default class PBVRenderer {
   getShaderMaterialInstance() {
     return new THREE.ShaderMaterial(_.assign(THREE.ShaderLib['points'], {
       uniforms: {
-        alphaZero: {type: 'f', value: this.alphaZero},
         rZero: {type: 'f', value: this.rZero},
         maxValue: {type: 'f', value: 100},
         minValue: {type: 'f', value: 0.001},
@@ -59,12 +54,12 @@ export default class PBVRenderer {
         transferFunctionColor : {type: 't', value: 0.1}
       },
       vertexColors: THREE.VertexColors,
-      vertexShader: require('./glsl/shader-material-vertex.glsl'),
-      fragmentShader: require('./glsl/shader-material-fragment.glsl'),
+      vertexShader: require('./glsl/shader-material.vert'),
+      fragmentShader: require('./glsl/shader-material.frag'),
     }));
   }
 
-  postProcess() { //Add EffectComposer to ralize a Postprocess
+  postProcess() {
     const size = _.mapValues(this.renderer.getSize(), v => v * helper.getPixelRatio());
     const renderTarget = new THREE.WebGLRenderTarget(size.width, size.height, {
       magFilter: THREE.LinearFilter,
@@ -78,116 +73,87 @@ export default class PBVRenderer {
     });
     this.composer = new EffectComposer(this.renderer, renderTarget);
     this.composer.addPass(new EffectComposer.ShaderPass({
-      vertexShader: require('./glsl/effect-composer-vertex.glsl'),
-      fragmentShader: require('./glsl/effect-composer-fragment.glsl')
+      vertexShader: require('./glsl/effect-composer.vert'),
+      fragmentShader: require('./glsl/effect-composer.frag')
     }));
-    this.scene.forEach((element,idx) => {
-      const effect = new EnsembleAveragePass(this.scene[idx], this.camera, this.N);
-      if(idx == this.N - 1) effect.renderToScreen = true;
+    this.scenes.forEach((element, idx) => {
+      const effect = new EnsembleAveragePass(this.scenes[idx], this.camera, this.scenes.length);
+      if(idx == this.scenes.length - 1) effect.renderToScreen = true;
       this.composer.addPass(effect);
     });
   }
 
-  getBaseDencity() {
-    return -Math.log(1 - this.alphaZero) / (Math.PI * this.rZero * this.rZero * this.deltaT);
-  }
-
   getMaxAlpha() {
-    const maxDensity = 1 / (8 * this.rZero * this.rZero * this.rZero);
-    return 1 - Math.exp(-Math.PI * this.rZero * this.rZero * maxDensity * this.deltaT);
+    const maxDensity = 1 / (8 * Math.pow(this.rZero, 3));
+    return 1 - Math.exp(-Math.PI * Math.pow(this.rZero, 2) * maxDensity * this.deltaT);
   }
 
-  getMaxValue () {
-    return _.chain(this.kvsml).map(k => k.maxValue).max().value();
-  }
-
-  getMinValue () {
-    return _.chain(this.kvsml).map(k => k.minValue).min().value();
-  }
-
-  getNumberOfVertices () {
-    return this.numberOfParticles;
-  }
-
-  getFramesPerSecond () {
+  getFramesPerSecond() {
     return this.stats.domElement.innerText.split(' ')[0];
   }
 
-  getDomElement () {
-    return this.renderer.domElement;
+  setVertexCoords(coords, idx) {
+    this.geometries[idx].addAttribute('position', new THREE.BufferAttribute(coords, 3));
   }
 
-  setVertexCoords (coords, idx) {
-    this.kvsml[idx].numberOfVertices = coords.length / 3;
-    this.geometry[idx].addAttribute('position', new THREE.BufferAttribute(coords, 3));
+  setVertexValues(values, idx) {
+    this.geometries[idx].addAttribute('valueData', new THREE.BufferAttribute(values, 1));
   }
 
-  setVertexValues (values, idx) {
-    this.kvsml[idx].maxValue = _.max(values);
-    this.kvsml[idx].minValue = _.min(values);
-    this.material[idx].uniforms.maxValue.value = _.max(values);
-    this.material[idx].uniforms.minValue.value = _.min(values);
-    this.geometry[idx].addAttribute('valueData', new THREE.BufferAttribute(values, 1));
+  setVertexAlphaZeros(alphaZeros, idx) {
+    this.geometries[idx].addAttribute('alphaZero', new THREE.BufferAttribute(alphaZeros, 1));
   }
 
-  generateParticlesFromPrism(coords, values, connect, params) {
-    const numberOfParticlesArray = new Array(Math.floor(connect.length / 6));
-    let numberOfParticles = 0;
+  // AlphaZero will be calculated as an average value of prism coordinates,
+  // and it must not exceed the maximum alpha value
+  getNumberOfParticles(prism, opacity) {
+    const oldRange = this.maxValue - this.minValue;
+    const newRange = opacity.length;
+    const alphas = prism.scalar.map(s => opacity[Math.floor(((s - this.minValue) * newRange) / oldRange)]);
+    const alphaZero = _.clamp(_.sum(alphas) / alphas.length, 0, this.getMaxAlpha());
+    prism.setVertexAlpha(...alphas);
+    return Math.floor(-Math.log(1 - alphaZero) / (Math.PI * Math.pow(this.rZero, 2) * this.deltaT));
+  }
 
-    //  create a prism cell and count the number of particles in each cell
-    for(let i = 0, cellNumber = 0; i < connect.length - 5; i = i + 6) {
-      const v = _.range(6).map(j => this.getCoord(coords, connect[i + j]));
-      const prism = new prismCell(...v);
+  // What should we do on this function:
+  // 1. Generate prisms from six each coordinates
+  // 2. Caluculate how many particles should be generated with ρ
+  // 3. Put particles inside each prisms
+  // 4. Repeat N times
+  generateParticlesFromPrism(coords, values, connects, params) {
+    [this.maxValue, this.minValue] = [_.max(values), _.min(values)];
 
-      //  calculate the number of particles in the prism.
-      const nParticleFloat = this.getBaseDencity() * prism.calculateVolume();
-      let nParticle = Math.floor(nParticleFloat);
-      if (nParticleFloat - nParticle > Math.random()) nParticle++;
-      numberOfParticles += nParticle;
-      numberOfParticlesArray[cellNumber++] = nParticle;
-    }
+    _.times(this.scenes.length, idx => {
+      const particleCoords = [];
+      const particleValues = [];
+      const particleAlphaZeros = [];
 
-    //  generate particles
-    this.scene.forEach((element, idx) => {
-      const particleCoords = new Float32Array(numberOfParticles * 3);
-      const particleValues = new Float32Array(numberOfParticles);
-
-      let valueIndex = 0;
-      let coordIndex = 0;
-      //  create a prism cell and generate particles
-      for(let i = 0, cellNumber = 0; i < connect.length - 5; i = i + 6) {
-        const v = _.range(6).map(j => this.getCoord(coords, connect[i + j]));
-        const s = _.range(6).map(j => values[connect[i + 0]]);
+      _.times(connects.length / 6, i => {
+        const v = _.range(6).map(j => this.getCoord(coords, connects[i*6 + j]));
+        const s = _.range(6).map(j => values[connects[i*6 + j]]);
 
         const prism = new prismCell(...v);
         prism.setVertexScalar(...s);
 
-        //  generate particles
-        for(let j = 0; j < numberOfParticlesArray[cellNumber]; j++){
-          const sample = prism.randomSampling();
-          particleValues[valueIndex] = prism.interpolateScalar(sample);
-          valueIndex++;
-
-          const global_coords = prism.localToGlobal(sample);
-          _.times(3, i => {
-            particleCoords[coordIndex] = global_coords[i];
-            coordIndex++;
-          });
-        }
-        cellNumber++;
-      }
-      this.setVertexCoords(particleCoords, idx);
-      this.setVertexValues(particleValues, idx);
-      this.scene[idx].add(this.points[idx]);
+        _.times(this.getNumberOfParticles(prism, params.opacity), j => {
+          const particlePosition = prism.randomSampling();
+          particleCoords.push(...prism.localToGlobal(particlePosition));
+          particleValues.push(prism.interpolateScalar(particlePosition));
+          particleAlphaZeros.push(prism.interpolateAlpha(particlePosition));
+        });
+      });
+      this.setVertexCoords(Float32Array.from(particleCoords), idx);
+      this.setVertexValues(Float32Array.from(particleValues), idx);
+      this.setVertexAlphaZeros(Float32Array.from(particleAlphaZeros), idx);
+      this.scenes[idx].add(new THREE.Points(this.geometries[idx], this.materials[idx]));
       this.updateTransferFunction(params, idx);
     });
 
-    this.numberOfParticles = numberOfParticles;
     this.updateAllMaxMinValue();
   }
 
   getCoord(data, idx) {
-    return [data[idx * 3], data[idx * 3 + 1], data[idx * 3 + 2]];
+    return [data[idx * 3 + 0], data[idx * 3 + 1], data[idx * 3 + 2]];
   }
 
   getTransferFunctionOpacity(opacity){
@@ -215,29 +181,17 @@ export default class PBVRenderer {
     return texture;
   }
 
-  updateTransferFunction(params, idx){
-    const opacityTexture = this.getTransferFunctionOpacity(params.opacity);
-    const colorTexture = this.getTransferFunctionColor(params.spectrum);
-    this.material[idx].uniforms.transferFunctionOpacity.value = opacityTexture;
-    this.material[idx].uniforms.transferFunctionColor.value = colorTexture;
-  }
-
-  updateAllTransferFunction(params){
-    const opacityTexture = this.getTransferFunctionOpacity(params.opacity);
-    const colorTexture = this.getTransferFunctionColor(params.spectrum);
-    this.scene.forEach((element,idx) => {
-      this.material[idx].uniforms.transferFunctionOpacity.value = opacityTexture;
-      this.material[idx].uniforms.transferFunctionColor.value = colorTexture;
+  updateTransferFunction(params){
+    this.materials.forEach(m => {
+      m.uniforms.transferFunctionOpacity.value = this.getTransferFunctionOpacity(params.opacity);
+      m.uniforms.transferFunctionColor.value = this.getTransferFunctionColor(params.spectrum);
     });
   }
 
   updateAllMaxMinValue(){
-    const max = this.getMaxValue();
-    const min = this.getMinValue();
-    this.scene.forEach((element, idx) => {
-      this.material[idx].uniforms.maxValue.value = max;
-      this.material[idx].uniforms.minValue.value = min;
+    this.materials.forEach(m => {
+      m.uniforms.maxValue.value = this.maxValue;
+      m.uniforms.minValue.value = this.minValue;
     });
   }
-
 }

@@ -3,13 +3,14 @@
 canvas#opacity(width="430" height="200" @mousemove="onMouseMove" @mousedown="onMouseDown"
               @mouseup="onMouseUp" @mouseleave="onMouseUp")
 .row
-  .column.column-50 {{ minValue }}
-  .column.column-60: .float-right {{ maxValue }}
+  .column.column-50.min-value: small {{ minValue }}
+  .column.column-60.max-value: small.float-right {{ maxValue }}
 </template>
 
 <script>
 import _ from 'lodash';
 import spline from 'cardinal-spline-js';
+import {Smooth as smooth} from 'Smooth.js';
 
 import helper from '../helper';
 
@@ -20,6 +21,12 @@ export default {
     isDown: false,
   }),
   computed: {
+    minValue() {
+      return this.$parent.minValue;
+    },
+    maxValue() {
+      return this.$parent.maxValue;
+    },
     opacity() {
       return document.getElementById('opacity');
     },
@@ -27,7 +34,7 @@ export default {
       return document.getElementById('opacity').getContext('2d');
     },
     getCurvePoints() {
-      return _.chunk(spline.getCurvePoints(_.flatten(this.currentOpacity), 0.2, 25, false), 2);
+      return _.chunk(spline.getCurvePoints(_.flatten(this.currentOpacity), 0.2, 25), 2);
     }
   },
   ready() {
@@ -47,7 +54,9 @@ export default {
       this.drawHandles();
 
       // Additional 0.0001 is used to prevent divergence of particle size
-      this.$parent.opacity = _.map(this.getCurvePoints, pt => 1.00001 - pt[1] / this.opacity.height);
+      const opacity = _.map(this.getCurvePoints, pt => 1.0001 - pt[1] / this.opacity.height);
+      const s = smooth(opacity, { scaleTo: [0, 100] });
+      this.$parent.opacity = _.range(100).map(i => s(i));
     },
     drawGrid() {
       this.context.lineWidth = 0.3;
@@ -130,5 +139,8 @@ export default {
 #opacity {
   border: 1px solid #aaa;
   cursor: crosshair;
+}
+.max-value {
+  padding-right: 40px;
 }
 </style>

@@ -1,6 +1,6 @@
 attribute float valueData;
+attribute float alphaZero;
 
-uniform float alphaZero;
 uniform float rZero;
 
 uniform float maxValue;
