@@ -43,7 +43,7 @@ export default {
     this.$on('reset', () => {
       this.currentOpacity = [[0, 180], [215, 100], [430, 20]];
       this.initGraph();
-      this.$parent.emit('updateVertexOpacity');
+      this.$parent.emit('updateTransferFunction');
     });
   },
   methods: {
@@ -129,7 +129,7 @@ export default {
     },
     onMouseUp() {
       this.isDown = false;
-      this.$parent.emit('updateVertexOpacity');
+      this.$parent.emit('updateTransferFunction');
     }
   }
 };

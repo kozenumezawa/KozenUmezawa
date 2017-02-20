@@ -48,7 +48,7 @@ export default {
 
     this.$on('reset', () => {
       this.reset();
-      this.$parent.emit('updateVertexColors');
+      this.$parent.emit('updateTransferFunction');
     });
   },
   methods: {
@@ -104,7 +104,7 @@ export default {
     stopDrag() {
       if(this.dragging) {
         this.dragging = false;
-        this.$parent.emit('updateVertexColors');
+        this.$parent.emit('updateTransferFunction');
       }
     }
   }

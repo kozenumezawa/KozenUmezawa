@@ -20,9 +20,7 @@ const pbvr = new PBVRenderer(640, 640);
 
 export default {
   ready () {
-    this.$on('updateVertexColors', () => pbvr.updateTransferFunction(this.$parent));
-    this.$on('updateVertexOpacity', () => pbvr.updateTransferFunction(this.$parent));
-    this.$on('reset', () => pbvr.updateTransferFunction(this.$parent));
+    this.$on('updateTransferFunction', () => pbvr.updateTransferFunction(this.$parent));
     document.getElementById('result').appendChild(pbvr.renderer.domElement);
     this.retrieveSampleKvsml();
   },
@@ -56,7 +54,6 @@ export default {
       this.maxValue = Math.floor(pbvr.maxValue * 100) / 100;
       this.$parent.minValue = this.minValue;
       this.$parent.maxValue = this.maxValue;
-      this.$parent.emit('updateValue');
       setInterval(() => {
         this.framesPerSecond = pbvr.getFramesPerSecond();
       }, 1000);

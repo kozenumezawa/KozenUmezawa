@@ -1,14 +1,15 @@
 <template lang="pug">
 ._buttons
   .row
-    .column.column-30: a.button(@click="emit('reset')") Reset
+    .column.column-30: a.button(@click="reset") Reset
 </template>
 
 <script>
 export default {
   methods: {
-    emit (name) {
-      this.$parent.emit(name);
+    reset() {
+      this.$parent.emit('reset');
+      this.$parent.emit('updateTransferFunction');
     }
   }
 };
