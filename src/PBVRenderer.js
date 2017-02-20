@@ -112,7 +112,9 @@ export default class PBVRenderer {
     const alphas = prism.scalar.map(s => opacity[Math.floor(((s - this.minValue) * newRange) / oldRange)]);
     const alphaZero = _.clamp(_.sum(alphas) / alphas.length, 0, this.getMaxAlpha());
     prism.setVertexAlpha(...alphas);
-    return Math.floor(-Math.log(1 - alphaZero) / (Math.PI * Math.pow(this.rZero, 2) * this.deltaT));
+    let rho = -Math.log(1 - alphaZero) / (Math.PI * Math.pow(this.rZero, 2) * this.deltaT);
+    if(Math.random() < (rho % 1)) rho++; // if rho is 0.9, particle will be shown by 90% probabillity
+    return Math.floor(rho);
   }
 
   // What should we do on this function:
@@ -146,9 +148,9 @@ export default class PBVRenderer {
       this.setVertexValues(Float32Array.from(particleValues), idx);
       this.setVertexAlphaZeros(Float32Array.from(particleAlphaZeros), idx);
       this.scenes[idx].add(new THREE.Points(this.geometries[idx], this.materials[idx]));
-      this.updateTransferFunction(params, idx);
     });
 
+    this.updateTransferFunction(params);
     this.updateAllMaxMinValue();
   }
 
