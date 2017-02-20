@@ -34,7 +34,7 @@ export default {
       return document.getElementById('opacity').getContext('2d');
     },
     getCurvePoints() {
-      return _.chunk(spline.getCurvePoints(_.flatten(this.currentOpacity), 0.2, 25), 2);
+      return _.chunk(spline.getCurvePoints(_.flatten(this.currentOpacity), 0.2, 100), 2);
     }
   },
   ready() {
@@ -53,10 +53,10 @@ export default {
       this.drawLine();
       this.drawHandles();
 
-      // Additional 0.0001 is used to prevent divergence of particle size
-      const opacity = _.map(this.getCurvePoints, pt => 1.0001 - pt[1] / this.opacity.height);
-      const s = smooth(opacity, { scaleTo: [0, 100] });
-      this.$parent.opacity = _.range(100).map(i => s(i));
+      // normalize opacity range
+      this.$parent.opacity = _.range(100).map(i => 1 - this.getCurvePoints.find(pt => {
+        return Math.floor(pt[0] / this.opacity.width * 100) === i;
+      })[1] / this.opacity.height);
     },
     drawGrid() {
       this.context.lineWidth = 0.3;
