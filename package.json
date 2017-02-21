@@ -4,7 +4,7 @@
   "author": "Takao NAITO <naito@sorapixels.com>",
   "private": true,
   "scripts": {
-    "dev": "webpack-dev-server --inline --hot --port 3000",
+    "dev": "webpack-dev-server --inline --hot --port 3000 --host 0.0.0.0",
     "build": "cross-env NODE_ENV=production webpack --progress --hide-modules"
   },
   "dependencies": {
@@ -27,7 +27,6 @@
     "milligram": "^1.3.0",
     "normalize.css": "^5.0.0",
     "pug": "^2.0.0-beta11",
-    "smooth.js": "github:jordanhaven/Smooth.js",
     "stats.js": "0.17.0",
     "style-loader": "^0.13.1",
     "three": "^0.84.0",

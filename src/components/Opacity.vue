@@ -10,7 +10,6 @@ canvas#opacity(width="430" height="200" @mousemove="onMouseMove" @mousedown="onM
 <script>
 import _ from 'lodash';
 import spline from 'cardinal-spline-js';
-import {Smooth as smooth} from 'Smooth.js';
 
 import helper from '../helper';
 
