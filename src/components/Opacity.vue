@@ -13,9 +13,11 @@ import spline from 'cardinal-spline-js';
 
 import helper from '../helper';
 
+const initialOpacity = [[0, 100], [215, 100], [430, 100]];
+
 export default {
   data: () => ({
-    currentOpacity: [[0, 180], [215, 100], [430, 20]],
+    currentOpacity: initialOpacity,
     pIndex: -1,
     isDown: false,
   }),
@@ -40,7 +42,7 @@ export default {
     this.initGraph();
 
     this.$on('reset', () => {
-      this.currentOpacity = [[0, 180], [215, 100], [430, 20]];
+      this.currentOpacity = initialOpacity;
       this.initGraph();
       this.$parent.emit('updateTransferFunction');
     });
