@@ -26,6 +26,6 @@ vec3 getColor(){
 void main() {
   vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
   vColor.xyz = getColor();
-  gl_PointSize = rZero * sqrt(log(1.0 - getAlpha()) / log(1.0 - alphaZero)) * 10.0;
+  gl_PointSize = rZero * sqrt( log(1.0 - getAlpha()) / log(1.0 - alphaZero) ) / -mvPosition.z;
   gl_Position = projectionMatrix * mvPosition;
 }
