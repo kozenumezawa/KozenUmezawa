@@ -21,10 +21,10 @@ import 'milligram';
 
 export default {
   components: {
-    result: require('./components/result.vue'),
-    color: require('./components/color.vue'),
-    opacity: require('./components/opacity.vue'),
-    buttons: require('./components/buttons.vue')
+    result: require('./components/Result.vue'),
+    color: require('./components/Color.vue'),
+    opacity: require('./components/Opacity.vue'),
+    buttons: require('./components/Buttons.vue')
   },
   data () {
     return {
