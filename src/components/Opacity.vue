@@ -35,7 +35,7 @@ export default {
       return document.getElementById('opacity').getContext('2d');
     },
     getCurvePoints() {
-      return _.chunk(spline.getCurvePoints(_.flatten(this.currentOpacity), 0.2, 100), 2);
+      return _.chunk(spline.getCurvePoints(_.flatten(this.currentOpacity), 0.2, 200), 2);
     }
   },
   ready() {
