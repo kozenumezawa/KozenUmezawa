@@ -4,7 +4,7 @@ import EnsembleAveragePass from 'three-ensemble-average-pass';
 const THREE = require('three');
 const stats = new (require('stats.js'))();
 const OrbitControls = require('three-orbit-controls')(THREE);
-const EffectComposer = (require('three-effectcomposer'))(THREE);
+const EffectComposer = require('three-effectcomposer')(THREE);
 
 import prismCell from './lib/prism-cell';
 import helper from './helper';
@@ -24,9 +24,9 @@ export default class PBVRenderer {
     const camera = new THREE.PerspectiveCamera(45, 1, 1, 1000);
     camera.position.z = 70;
 
-    this.geometries = Array(N).fill(new THREE.BufferGeometry());
-    this.materials = Array(N).fill(this.getShaderMaterialInstance());
-    this.scenes = Array(N).fill(new THREE.Scene());
+    this.geometries = _.range(N).map(i => new THREE.BufferGeometry());
+    this.materials = _.range(N).map(i => this.getShaderMaterialInstance());
+    this.scenes = _.range(N).map(i => new THREE.Scene());
 
     this.postProcess(camera);
 
