@@ -13,7 +13,8 @@ import spline from 'cardinal-spline-js';
 
 import helper from '../helper';
 
-const initialOpacity = [[0, 100], [215, 100], [430, 100]];
+// const initialOpacity = [[0, 200], [100, 100], [250, 0], [300, 200], [430, 200]];
+const initialOpacity = [[0, 100], [100, 100], [250, 100], [300, 100], [430, 100]];
 
 export default {
   data: () => ({

@@ -15,36 +15,34 @@ import axios from 'axios';
 axios.defaults.responseType = 'arraybuffer';
 
 import PBVRenderer from '../PBVRenderer';
-
 const pbvr = new PBVRenderer(640, 640);
+const rcBuffer = new Uint8Array(640 * 640 * 4);
+const pbvrBuffer = new Uint8Array(640 * 640 * 4);
+const diffBuffer = new Uint8Array(640 * 640 * 4);
+let diffAmount = 0;
 
 export default {
   ready () {
     this.$on('updateTransferFunction', () => pbvr.updateTransferFunction(this.$parent));
     document.getElementById('result').appendChild(pbvr.renderer.domElement);
-    this.retrieveSampleKvsml();
+    setInterval(() => this.checkDiff(), 5);
+    this.retrieveLobstarData();
   },
   data () {
     return {
       minValue: '-',
       maxValue: '-',
       framesPerSecond: 0,
-      numberOfVertices: 0
+      numberOfVertices: 0,
     };
   },
   methods: {
-    retrieveSampleKvsml () {
-      Promise.all([
-        axios.get('./assets/kvsml/51000_coord.dat'),
-        axios.get('./assets/kvsml/51000_value.dat'),
-        axios.get('./assets/kvsml/51000_connect.dat')
-      ])
+    retrieveLobstarData() {
+      axios.get('./assets/kvsml/lobstar_value.dat')
       .then(res => {
-        const coords = new Float32Array(res[0].data);
-        const values = new Float32Array(res[1].data);
-        const connects = new Uint32Array(res[2].data);
+        const values = new Float32Array(res.data);
         this.numberOfVertices = values.length;
-        pbvr.generateParticlesFromPrism(coords, values, connects, this.$parent);
+        pbvr.generateParticlesFromCubes(values, this.$parent);
         pbvr.animate();
       })
       .then(this.updateStats);
@@ -54,9 +52,29 @@ export default {
       this.maxValue = Math.floor(pbvr.maxValue * 100) / 100;
       this.$parent.minValue = this.minValue;
       this.$parent.maxValue = this.maxValue;
-      setInterval(() => {
-        this.framesPerSecond = pbvr.getFramesPerSecond();
-      }, 1000);
+    },
+    checkDiff() {
+      const rcCtx = document.getElementById('ray-casting').contentWindow.ctx;
+      if(!rcCtx) return;
+      rcCtx.readPixels(0, 0, 640, 640, rcCtx.RGBA, rcCtx.UNSIGNED_BYTE, rcBuffer);
+      if(rcBuffer.every(e => e == 0 || e == 255)) return; // somehow rcCtx returns empty array
+
+      const pbvrCtx = pbvr.renderer.domElement.getContext('webgl', {preserveDrawingBuffer: true});
+      pbvrCtx.readPixels(0, 0, 640, 640, pbvrCtx.RGBA, pbvrCtx.UNSIGNED_BYTE, pbvrBuffer);
+
+      for(let i=0; i<diffBuffer.length; i+=4) {
+        diffBuffer[i + 0] = Math.abs(pbvrBuffer[i + 0] - rcBuffer[i + 0]);
+        diffBuffer[i + 1] = Math.abs(pbvrBuffer[i + 1] - rcBuffer[i + 1]);
+        diffBuffer[i + 2] = Math.abs(pbvrBuffer[i + 2] - rcBuffer[i + 2]);
+        diffBuffer[i + 3] = 255;
+      }
+      const diffImageData = document.createElement('canvas').getContext('2d').createImageData(640, 640);
+      diffImageData.data.set(diffBuffer);
+      document.getElementById('diff-image').getContext('2d').putImageData(diffImageData, 0, 0);
+      const tmp = diffBuffer.reduce((a, b) => a + b) - 255 * 640 * 640;
+      if(diffAmount === tmp) return;
+      diffAmount = tmp;
+      console.log(`${tmp} diff: `, this.$parent._data.opacity);
     }
   }
 };

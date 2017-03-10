@@ -1,18 +1,17 @@
 <template lang="pug">
 .container
   .row(v-if="supportWebGL")
-    .column.column-60
+    .column.column-50.centering
       result
-    .column.column-40
-      color
+    .column.column-50.centering
+      .title Ray-casting
+      iframe#ray-casting(src="./w14/index.html", width="640", height="640")
+  .row
+    .column.column-30
       opacity
       buttons
-  .unsupported(v-if="!supportWebGL")
-    p: strong
-      | The browser that you're using does not support WebGL technology.<br>
-      | Please use a newer browser instead, or check if the feature is enabled.
-    p: a(href="http://webglreport.com/") WebGL Report
-    p: a(href="http://caniuse.com/#feat=webgl") Can I use? - WebGL
+    .column.column-70.centering
+      canvas#diff-image(width="640", height="640")
 </template>
 
 <script>
@@ -22,16 +21,15 @@ import 'milligram';
 export default {
   components: {
     result: require('./components/Result.vue'),
-    color: require('./components/Color.vue'),
     opacity: require('./components/Opacity.vue'),
     buttons: require('./components/Buttons.vue')
   },
   data () {
     return {
-      spectrum: [],
       opacity: [],
       maxValue: 1,
-      minValue: 0
+      minValue: 0,
+      diffs: 0,
     };
   },
   computed: {
@@ -58,15 +56,29 @@ body {
   user-select: none;
   padding: 24px 0;
 }
+.centering {
+  text-align: center;
+}
 .container {
   margin: 20px auto;
   padding: 0;
-  width: 1140px;
+  width: 1280px;
+  max-width: 100% !important;
 }
 .title:not(:first-child) {
   margin-top: 8px;
 }
 .unsupported {
   text-align: center;
+}
+.row {
+  width: 100% !important;
+}
+#ray-casting {
+  border: none;
+  margin-right: 30px;
+}
+#diff-image {
+  transform: rotate(90deg);
 }
 </style>
