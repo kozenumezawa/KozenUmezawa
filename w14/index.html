@@ -4,7 +4,6 @@
     </head>
     <body style="margin:0">
 	<script src="three.min.js"></script>
-	<script src="TrackballControls.js"></script>
 	<script src="KVS.js"></script>
 	<script src="KVS2THREE.js"></script>
 	<script src="KVSLobsterData.js"></script>
@@ -198,8 +197,7 @@
 	     return C * ( Ia + Id + Is );
 	 }
 
-	 void main()
-	 {
+	 void main() {
 	     float x = ( position_clp.x / position_clp.w + 1.0 ) / 2.0;
 	     float y = ( position_clp.y / position_clp.w + 1.0 ) / 2.0;
 	     vec2 index = vec2( x, y );
@@ -217,8 +215,7 @@
 	     float opaque = 0.95;
 	     vec3 position = entry_point;
 	     vec4 color = vec4( 0.0, 0.0, 0.0, 0.0 );
-	     for ( int i = 0; i < 10000; i++ )
-	     {
+	     for ( int i = 0; i < 10000; i++ ) {
 		 vec3 volume_index = vec3( ( position + vec3( 0.5 ) ) / volume_resolution );
 
 		 float s = LookupTexture3D( volume_data, volume_resolution, volume_index ).a;
@@ -235,7 +232,7 @@
 		     vec3 V = normalize( camera_position - position );
 //		     c.rgb = PhongReflection( c.rgb, L, N, V );
 //		     c.rgb = BlinnPhongReflection( c.rgb, L, N, V );
-		     c.rgb = CookTorranceReflection( c.rgb, L, N, V );
+		    //  c.rgb = CookTorranceReflection( c.rgb, L, N, V );
 
 		     // Front-to-back composition.
 		     color.rgb += ( 1.0 - color.a ) * c.a * c.rgb;
