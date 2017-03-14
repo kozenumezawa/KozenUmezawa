@@ -10,7 +10,7 @@ float getAlpha() {
 }
 
 float getR() {
-  return sqrt(-log(1.0 - getAlpha()) / 0.5 / PI / 1000.0);
+  return sqrt(-log(1.0 - getAlpha()) / 0.5 / PI / rho);
 }
 
 vec3 getColor() {

@@ -14,7 +14,7 @@ const once = _.once(console.log);
 
 export default class PBVRenderer {
   constructor(width, height) {
-    const N = 1; // emsemble
+    const N = 30; // emsemble
     this.deltaT = 0.5;
     this.maxValue = null;
     this.minValue = null;
@@ -23,7 +23,7 @@ export default class PBVRenderer {
     this.renderer.setSize(width, height);
 
     const camera = new THREE.PerspectiveCamera(45, 1, 0.01, 10000);
-    camera.position.set(180, 0, 0);
+    camera.position.set(0, 0, -180);
 
     this.geometries = _.range(N).map(i => new THREE.BufferGeometry());
     this.materials = _.range(N).map(i => this.getShaderMaterialInstance());
@@ -78,34 +78,28 @@ export default class PBVRenderer {
     return stats.domElement.innerText.split(' ')[0];
   }
 
-  getCoordsFromIndex(idx) {
-    const maxX = 120; // XXX: TERRIBLE
-    const maxY = 120;
-    const x = Math.floor(idx / (maxX * maxY));
-    idx -= maxX * maxY * x;
-    let y = Math.floor(idx / maxY);
-    idx -= maxY * y;
-    let z = idx;
-    y -= 59.5;
-    z -= 59.5;
+  getCoordsFromIndex(i, j, k) {
+    const x = 59.5 - i;
+    const y = j - 59.5;
+    const z = -k;
     return [
-      [x, y, -z],
-      [x + 1, y, -z],
-      [x + 1, y + 1, -z],
-      [x, y + 1, -z],
-      [x, y, -z + 1],
-      [x + 1, y, -z + 1],
-      [x + 1, y + 1, -z + 1],
-      [x, y + 1, -z + 1],
+      [x + 1, y, z],
+      [x, y, z],
+      [x, y + 1, z],
+      [x + 1, y + 1, z],
+      [x + 1, y, z + 1],
+      [x, y, z + 1],
+      [x, y + 1, z + 1],
+      [x + 1, y + 1, z + 1],
     ];
   }
 
   getNumberOfParticles(cell) {
+    return 1
     const alpha = _.sum(cell.scalar) / 255.0 / cell.scalar.length;
     let rho = -Math.PI * this.deltaT / Math.log(1 - alpha);
     if (Math.random() < (rho % 1)) rho++; // if rho is 0.9, particle will be shown by 90% probabillity
-    // return Math.floor(rho);
-    return 1000.0;
+    return Math.floor(rho);
   }
 
   generateParticlesFromCubes(values) {
@@ -115,39 +109,39 @@ export default class PBVRenderer {
       const particleCoords = [];
       const particleValues = [];
       const rhos = [];
-      for(let k=4; k<5; k++) {
+      for(let k=0; k<33; k++) {
         console.log(k);
         for(let j=0; j<119; j++) {
           for(let i=0; i<119; i++) {
-            const v = this.getCoordsFromIndex(k*119*119 + j*119 + i);
+            const v = this.getCoordsFromIndex(i, j, k);
 
             const s = [
-              values[(k+1)*119*119 + j*119 + i],
-              values[k*119*119 + (j+1)*119 + i],
-              values[k*119*119 + (j+1)*119 + (i+1)],
-              values[(k+1)*119*119 + j*119 + (i+1)],
-              values[(k+1)*119*119 + (j+1)*119 + (i+1)],
-              values[k*119*119 + j*119 + i],
-              values[k*119*119 + j*119 + (i+1)],
-              values[(k+1)*119*119 + (j+1)*119 + i],
+              values[k*120*120 + j*120 + i],
+              values[k*120*120 + j*120 + (i+1)],
+              values[k*120*120 + (j+1)*120 + (i+1)],
+              values[k*120*120 + (j+1)*120 + i],
+              values[(k+1)*120*120 + j*120 + i],
+              values[(k+1)*120*120 + j*120 + (i+1)],
+              values[(k+1)*120*120 + (j+1)*120 + (i+1)],
+              values[(k+1)*120*120 + (j+1)*120 + i],
             ];
 
             const cube = new cubeCell(...v);
             cube.setVertexScalar(...s);
 
             const rho = (_.sum(s) === 0) ? 0 : this.getNumberOfParticles(cube);
-            rhos.push(rho);
 
             _.times(rho, j => {
               const particlePosition = cube.randomSampling();
               particleCoords.push(...cube.localToGlobal(particlePosition));
               particleValues.push(cube.interpolateScalar(particlePosition));
+              rhos.push(rho);
             });
           }
         }
       }
       this.setVertexCoords(Float32Array.from(particleCoords), idx);
-      this.setVertexValues(Float32Array.from(particleValues), Float32Array.from(particleValues), idx);
+      this.setVertexValues(Float32Array.from(particleValues), Float32Array.from(rhos), idx);
       scene.add(new THREE.Points(this.geometries[idx], this.materials[idx]));
     });
   }
