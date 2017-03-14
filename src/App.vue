@@ -8,8 +8,7 @@
       iframe#ray-casting(src="./w14/index.html", width="640", height="640")
   .row
     .column.column-30
-      opacity
-      buttons
+      p info
     .column.column-70.centering
       canvas#diff-image(width="640", height="640")
 </template>
@@ -21,12 +20,10 @@ import 'milligram';
 export default {
   components: {
     result: require('./components/Result.vue'),
-    opacity: require('./components/Opacity.vue'),
     buttons: require('./components/Buttons.vue')
   },
   data () {
     return {
-      opacity: [],
       maxValue: 1,
       minValue: 0,
       diffs: 0,

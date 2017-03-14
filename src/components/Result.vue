@@ -3,7 +3,7 @@
 #result
 .row
   .column.column-50
-    | Number of vertices: <b>{{ numberOfVertices }}</b><br>
+    | Number of cells: <b>{{ numberOfVertices }}</b><br>
     | Frames per second: <b>{{ framesPerSecond }}</b>
   .column.column-50
     | Maximum value: <b>{{ maxValue }}</b><br>
@@ -23,9 +23,9 @@ let diffAmount = 0;
 
 export default {
   ready () {
-    this.$on('updateTransferFunction', () => pbvr.updateTransferFunction(this.$parent));
+    this.$on('updateTransferFunction', () => pbvr.updateTransferFunction());
     document.getElementById('result').appendChild(pbvr.renderer.domElement);
-    setInterval(() => this.checkDiff(), 5);
+    setInterval(() => this.checkDiff(), 500);
     this.retrieveLobstarData();
   },
   data () {
@@ -42,7 +42,7 @@ export default {
       .then(res => {
         const values = new Float32Array(res.data);
         this.numberOfVertices = values.length;
-        pbvr.generateParticlesFromCubes(values, this.$parent);
+        pbvr.generateParticlesFromCubes(values);
         pbvr.animate();
       })
       .then(this.updateStats);
@@ -74,7 +74,7 @@ export default {
       const tmp = diffBuffer.reduce((a, b) => a + b) - 255 * 640 * 640;
       if(diffAmount === tmp) return;
       diffAmount = tmp;
-      console.log(`${tmp} diff: `, this.$parent._data.opacity);
+      console.log(`${tmp} diff: `);
     }
   }
 };

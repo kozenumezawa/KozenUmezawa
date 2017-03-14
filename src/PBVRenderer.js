@@ -15,20 +15,15 @@ const once = _.once(console.log);
 export default class PBVRenderer {
   constructor(width, height) {
     const N = 1; // emsemble
-    this.deltaT = 1.0;
-    this.rZero = null;
+    this.deltaT = 0.5;
     this.maxValue = null;
     this.minValue = null;
 
-    this.renderer = new THREE.WebGLRenderer({
-      preserveDrawingBuffer: true
-    });
+    this.renderer = new THREE.WebGLRenderer({preserveDrawingBuffer: true});
     this.renderer.setSize(width, height);
 
     const camera = new THREE.PerspectiveCamera(45, 1, 0.01, 10000);
     camera.position.set(180, 0, 0);
-
-    window.camera = camera;
 
     this.geometries = _.range(N).map(i => new THREE.BufferGeometry());
     this.materials = _.range(N).map(i => this.getShaderMaterialInstance());
@@ -49,24 +44,6 @@ export default class PBVRenderer {
 
   getShaderMaterialInstance() {
     return new THREE.ShaderMaterial({
-      uniforms: {
-        rZero: {
-          type: 'f',
-          value: 0
-        },
-        maxValue: {
-          type: 'f',
-          value: 0
-        },
-        minValue: {
-          type: 'f',
-          value: 0
-        },
-        transferFunctionOpacity: {
-          type: 't',
-          value: 0
-        }
-      },
       vertexColors: THREE.VertexColors,
       vertexShader: require('./glsl/shader-material.vert'),
       fragmentShader: require('./glsl/shader-material.frag'),
@@ -101,24 +78,6 @@ export default class PBVRenderer {
     return stats.domElement.innerText.split(' ')[0];
   }
 
-  getMaxAlpha() {
-    const maxDensity = 1 / (8 * Math.pow(this.rZero, 3));
-    return 1 - Math.exp(-Math.PI * Math.pow(this.rZero, 2) * maxDensity * this.deltaT);
-  }
-
-  // AlphaZero will be calculated as an average value of prism coordinates,
-  // and it must not exceed the maximum alpha value
-  getNumberOfParticles(cell, opacity) {
-    const oldRange = this.maxValue - this.minValue;
-    const newRange = opacity.length;
-    const alphas = cell.scalar.map(s => opacity[Math.floor(((s - this.minValue) * newRange) / oldRange)]);
-    const alphaZero = _.clamp(_.mean(alphas), 0, this.getMaxAlpha());
-    cell.setVertexAlpha(...alphas);
-    let rho = -Math.log(1 - alphaZero) / (Math.PI * Math.pow(this.rZero, 2) * this.deltaT);
-    if (Math.random() < (rho % 1)) rho++; // if rho is 0.9, particle will be shown by 90% probabillity
-    return Math.floor(rho);
-  }
-
   getCoordsFromIndex(idx) {
     const maxX = 120; // XXX: TERRIBLE
     const maxY = 120;
@@ -127,8 +86,8 @@ export default class PBVRenderer {
     let y = Math.floor(idx / maxY);
     idx -= maxY * y;
     let z = idx;
-    y -= 60;
-    z -= 60;
+    y -= 59.5;
+    z -= 59.5;
     return [
       [x, y, -z],
       [x + 1, y, -z],
@@ -141,50 +100,64 @@ export default class PBVRenderer {
     ];
   }
 
-  generateParticlesFromCubes(values, params) {
-    this.updateAllMaxMinValue(values);
-    this.updateRZero(values);
+  getNumberOfParticles(cell) {
+    const alpha = _.sum(cell.scalar) / 255.0 / cell.scalar.length;
+    let rho = -Math.PI * this.deltaT / Math.log(1 - alpha);
+    if (Math.random() < (rho % 1)) rho++; // if rho is 0.9, particle will be shown by 90% probabillity
+    return Math.floor(rho);
+  }
+
+  generateParticlesFromCubes(values) {
+    [this.maxValue, this.minValue] = [_.max(values), _.min(values)];
 
     this.scenes.forEach((scene, idx) => {
       const particleCoords = [];
       const particleValues = [];
-      const particleAlphaZeros = [];
+      const rhos = [];
+      for(let k=0; k<33; k++) {
+        console.log(k);
+        for(let j=0; j<119; j++) {
+          for(let i=0; i<119; i++) {
+            const v = this.getCoordsFromIndex(k*119*119 + j*119 + i);
+            const s = [
+              values[k*119*119 + (j+1)*119 + i],
+              values[k*119*119 + j*119 + i],
+              values[k*119*119 + j*119 + (i+1)],
+              values[k*119*119 + (j+1)*119 + (i+1)],
+              values[(k+1)*119*119 + j*119 + i],
+              values[(k+1)*119*119 + (j+1)*119 + (i+1)],
+              values[(k+1)*119*119 + (j+1)*119 + i],
+              values[(k+1)*119*119 + j*119 + (i+1)],
+            ];
 
-      _.times(values.length, i => {
-        const v = this.getCoordsFromIndex(i);
-        const s = _.range(8).map(j => values[i]);
+            const cube = new cubeCell(...v);
+            cube.setVertexScalar(...s);
 
-        const cube = new cubeCell(...v);
-        cube.setVertexScalar(...s);
+            const rho = (_.sum(s) === 0) ? 0 : this.getNumberOfParticles(cube);
+            rhos.push(rho);
 
-        const rho = values[i] === 0 ? 0 : this.getNumberOfParticles(cube, params.opacity);
-
-        _.times(rho, j => {
-          const particlePosition = cube.randomSampling();
-          particleCoords.push(...cube.localToGlobal(particlePosition));
-          particleValues.push(cube.interpolateScalar(particlePosition));
-          particleAlphaZeros.push(cube.interpolateAlpha(particlePosition));
-        });
-      });
+            _.times(rho, j => {
+              const particlePosition = cube.metropolisSampling(rho);
+              // const particlePosition = cube.randomSampling();
+              particleCoords.push(...cube.localToGlobal(particlePosition));
+              particleValues.push(cube.interpolateScalar(particlePosition));
+            });
+          }
+        }
+      }
       this.setVertexCoords(Float32Array.from(particleCoords), idx);
-      this.setVertexValues(Float32Array.from(particleValues), idx);
-      this.setVertexAlphaZeros(Float32Array.from(particleAlphaZeros), idx);
+      this.setVertexValues(Float32Array.from(particleValues), Float32Array.from(particleValues), idx);
       scene.add(new THREE.Points(this.geometries[idx], this.materials[idx]));
     });
-
-    this.updateTransferFunction(params);
   }
 
   setVertexCoords(coords, idx) {
     this.geometries[idx].addAttribute('position', new THREE.BufferAttribute(coords, 3));
   }
 
-  setVertexValues(values, idx) {
+  setVertexValues(values, rhos, idx) {
     this.geometries[idx].addAttribute('valueData', new THREE.BufferAttribute(values, 1));
-  }
-
-  setVertexAlphaZeros(alphaZeros, idx) {
-    this.geometries[idx].addAttribute('alphaZero', new THREE.BufferAttribute(alphaZeros, 1));
+    this.geometries[idx].addAttribute('rho', new THREE.BufferAttribute(rhos, 1));
   }
 
   createDataTexture(data, width, height, format) {
@@ -196,33 +169,5 @@ export default class PBVRenderer {
     texture.wrapT = THREE.ClampToEdgeWrapping;
     texture.needsUpdate = true;
     return texture;
-  }
-
-  updateTransferFunction(params) {
-    this.materials.forEach(m => {
-      m.uniforms.transferFunctionOpacity.value = this.getTransferFunctionOpacity(params.opacity);
-    });
-  }
-
-  getTransferFunctionOpacity(opacity) {
-    const width = opacity.length;
-    const height = 1;
-    const data = Float32Array.from(opacity);
-    return this.createDataTexture(data, width, height, THREE.AlphaFormat);
-  }
-
-  updateAllMaxMinValue(values) {
-    [this.maxValue, this.minValue] = [_.max(values), _.min(values)];
-    this.materials.forEach(m => {
-      m.uniforms.maxValue.value = this.maxValue;
-      m.uniforms.minValue.value = this.minValue;
-    });
-  }
-
-  updateRZero(values) {
-    this.rZero = 0.04;
-    this.materials.forEach(m => {
-      m.uniforms.rZero.value = this.rZero;
-    });
   }
 }

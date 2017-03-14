@@ -89,7 +89,7 @@ function TransferFunctionTexture() {
   const data = new Float32Array(width * height * 4);
   for (let i = 0; i < resolution; i++) {
     const color = KVS.RainbowColorMap(0, 255, i);
-    const alpha = i / 255.0;
+    const alpha = (i / 255.0);// > 0.8 ? 1 : 0;
     data[4 * i + 0] = color.x;
     data[4 * i + 1] = color.y;
     data[4 * i + 2] = color.z;
@@ -118,12 +118,6 @@ function main() {
     height: 640,
     enableAutoResize: false
   });
-
-  //    screen.dynamicDampingFactor = 0.3;
-  //    screen.trackball.rotatetSpeed = 1.0;
-  //    screen.trackball.noPan = false;
-  //    screen.trackball.noZoom = false;
-  //    screen.renderer.setClearColor( new THREE.Color( "black" ) );
 
   const exit_buffer = new THREE.Scene();
   const exit_texture = new THREE.WebGLRenderTarget(
@@ -191,8 +185,8 @@ function main() {
 
   const raycaster_mesh = new THREE.Mesh(bounding_geometry, raycaster_material);
   screen.scene.add(raycaster_mesh);
+  screen.light.position.copy(screen.camera.position);
 
-  document.addEventListener('mousemove', () => screen.light.position.copy(screen.camera.position));
   window.addEventListener('resize', () => screen.resize([640, 640]));
 
   screen.loop();

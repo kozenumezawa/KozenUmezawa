@@ -1,12 +1,15 @@
 //  cube's vertices are defined as follows:
 //
 //      N3-----N2     N0=(0,0,1)  (=(p,q,r))
-//     /     /
-//    N0----N1 |
-//     |    |  |
-//     |    |  N6
-//    N4----N5
+//     /     /        N1=(1,0,1)
+//    N0----N1 |      N2=(1,1,1)
+//     |    |  |      N3=(0,1,1)
+//     |    |  N6     N4=(0,0,0)
+//    N4----N5        N5=(1,0,0)
+//                    N6=(1,1,0)
+//                    N7=(0,1,0)
 
+import _ from 'lodash';
 import baseCell from './base-cell';
 
 export default class cubeCell extends baseCell {
@@ -14,14 +17,11 @@ export default class cubeCell extends baseCell {
     super();
     this.V = [v0, v1, v2, v3, v4, v5, v6, v7]; //  coordinates
     this.vertices = 8;
+    this.position = [0,0,0];
   }
 
   setVertexScalar(s0, s1, s2, s3, s4, s5, s6, s7) {
     this.scalar = [s0, s1, s2, s3, s4, s5, s6, s7]; //  scalar
-  }
-
-  setVertexAlpha(a0, a1, a2, a3, a4, a5, a6, a7) {
-    this.alpha = [a0, a1, a2, a3, a4, a5, a6, a7]; //  scalar
   }
 
   getInterpolationFunctions(local) {
@@ -42,16 +42,25 @@ export default class cubeCell extends baseCell {
     return N;
   }
 
+  metropolisSampling(rho) {
+    for(;;) {
+      const pi = this.interpolateScalar(this.position);
+      const xd = this.randomSampling();
+      const pd = this.interpolateScalar(xd);
+      if(pd / pi > 1) {
+        this.position = xd;
+        return this.position;
+      } else if(Math.random() <= (pd / pi)) {
+        this.position = xd;
+      }
+    }
+  }
+
   randomSampling() {
     const p = Math.random();
     const q = Math.random();
     const r = Math.random();
-    const local = new Array(3);
-
-    local[0] = p;
-    local[1] = q;
-    local[2] = r;
-    return local;
+    return [p, q, r];
   }
 
   calculateVolume() {
