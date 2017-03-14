@@ -10,7 +10,7 @@ float getAlpha() {
 }
 
 float getR() {
-  return sqrt(-log(1.0 - getAlpha()) / 0.5 / PI / rho);
+  return sqrt(-log(1.0 - getAlpha()) / 0.5 / PI / 1000.0);
 }
 
 vec3 getColor() {
@@ -23,6 +23,6 @@ vec3 getColor() {
 void main() {
   vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
   vColor.xyz = getColor();
-  gl_PointSize = 1000.0 * getR() / -mvPosition.z;
+  gl_PointSize = 3000.0 * getR() / -mvPosition.z;
   gl_Position = projectionMatrix * mvPosition;
 }

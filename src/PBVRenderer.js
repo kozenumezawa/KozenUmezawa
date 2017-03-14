@@ -104,7 +104,8 @@ export default class PBVRenderer {
     const alpha = _.sum(cell.scalar) / 255.0 / cell.scalar.length;
     let rho = -Math.PI * this.deltaT / Math.log(1 - alpha);
     if (Math.random() < (rho % 1)) rho++; // if rho is 0.9, particle will be shown by 90% probabillity
-    return Math.floor(rho);
+    // return Math.floor(rho);
+    return 1000.0;
   }
 
   generateParticlesFromCubes(values) {
@@ -114,20 +115,21 @@ export default class PBVRenderer {
       const particleCoords = [];
       const particleValues = [];
       const rhos = [];
-      for(let k=0; k<33; k++) {
+      for(let k=4; k<5; k++) {
         console.log(k);
         for(let j=0; j<119; j++) {
           for(let i=0; i<119; i++) {
             const v = this.getCoordsFromIndex(k*119*119 + j*119 + i);
+
             const s = [
+              values[(k+1)*119*119 + j*119 + i],
               values[k*119*119 + (j+1)*119 + i],
+              values[k*119*119 + (j+1)*119 + (i+1)],
+              values[(k+1)*119*119 + j*119 + (i+1)],
+              values[(k+1)*119*119 + (j+1)*119 + (i+1)],
               values[k*119*119 + j*119 + i],
               values[k*119*119 + j*119 + (i+1)],
-              values[k*119*119 + (j+1)*119 + (i+1)],
-              values[(k+1)*119*119 + j*119 + i],
-              values[(k+1)*119*119 + (j+1)*119 + (i+1)],
               values[(k+1)*119*119 + (j+1)*119 + i],
-              values[(k+1)*119*119 + j*119 + (i+1)],
             ];
 
             const cube = new cubeCell(...v);
@@ -137,8 +139,7 @@ export default class PBVRenderer {
             rhos.push(rho);
 
             _.times(rho, j => {
-              const particlePosition = cube.metropolisSampling(rho);
-              // const particlePosition = cube.randomSampling();
+              const particlePosition = cube.randomSampling();
               particleCoords.push(...cube.localToGlobal(particlePosition));
               particleValues.push(cube.interpolateScalar(particlePosition));
             });
