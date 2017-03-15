@@ -23,7 +23,7 @@ export default class PBVRenderer {
     this.renderer.setSize(width, height);
 
     const camera = new THREE.PerspectiveCamera(45, 1, 0.01, 10000);
-    camera.position.set(0, 0, -180);
+    camera.position.set(0, 0, 180);
 
     this.geometries = _.range(N).map(i => new THREE.BufferGeometry());
     this.materials = _.range(N).map(i => this.getShaderMaterialInstance());
@@ -79,9 +79,9 @@ export default class PBVRenderer {
   }
 
   getCoordsFromIndex(i, j, k) {
-    const x = 59.5 - i;
+    const x = i - 59.5;
     const y = j - 59.5;
-    const z = -k;
+    const z = k;
     return [
       [x + 1, y, z],
       [x, y, z],
@@ -116,14 +116,14 @@ export default class PBVRenderer {
             const v = this.getCoordsFromIndex(i, j, k);
 
             const s = [
-              values[k*120*120 + j*120 + i],
               values[k*120*120 + j*120 + (i+1)],
-              values[k*120*120 + (j+1)*120 + (i+1)],
+              values[k*120*120 + j*120 + i],
               values[k*120*120 + (j+1)*120 + i],
-              values[(k+1)*120*120 + j*120 + i],
+              values[k*120*120 + (j+1)*120 + (i+1)],
               values[(k+1)*120*120 + j*120 + (i+1)],
-              values[(k+1)*120*120 + (j+1)*120 + (i+1)],
+              values[(k+1)*120*120 + j*120 + i],
               values[(k+1)*120*120 + (j+1)*120 + i],
+              values[(k+1)*120*120 + (j+1)*120 + (i+1)],
             ];
 
             const cube = new cubeCell(...v);
