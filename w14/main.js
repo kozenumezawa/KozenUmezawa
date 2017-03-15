@@ -145,7 +145,7 @@ function main() {
   const bounding_mesh = new THREE.Mesh(bounding_geometry, bounding_material);
   exit_buffer.add(bounding_mesh);
 
-  screen.camera.position.set(59.5, 59.5, 180);
+  screen.camera.position.set(60, 60, 180);
 
   const raycaster_material = new THREE.ShaderMaterial({
     vertexShader: document.getElementById('raycaster.vert').textContent,

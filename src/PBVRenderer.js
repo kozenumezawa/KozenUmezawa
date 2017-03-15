@@ -22,8 +22,9 @@ export default class PBVRenderer {
     this.renderer = new THREE.WebGLRenderer({preserveDrawingBuffer: true});
     this.renderer.setSize(width, height);
 
-    const camera = new THREE.PerspectiveCamera(45, 1, 0.01, 10000);
-    camera.position.set(0, 0, -180);
+    const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 11900);
+    camera.position.set(0, 0, -178.5);
+    window.camera = camera;
 
     this.geometries = _.range(N).map(i => new THREE.BufferGeometry());
     this.materials = _.range(N).map(i => this.getShaderMaterialInstance());
@@ -79,8 +80,8 @@ export default class PBVRenderer {
   }
 
   getCoordsFromIndex(i, j, k) {
-    const x = 59.5 - i;
-    const y = j - 59.5;
+    const x = 58.8 - i;
+    const y = j - 59.7;
     const z = -k;
     return [
       [x + 1, y, z],
@@ -95,7 +96,6 @@ export default class PBVRenderer {
   }
 
   getNumberOfParticles(cell) {
-    return 1
     const alpha = _.sum(cell.scalar) / 255.0 / cell.scalar.length;
     let rho = -Math.PI * this.deltaT / Math.log(1 - alpha);
     if (Math.random() < (rho % 1)) rho++; // if rho is 0.9, particle will be shown by 90% probabillity
@@ -113,8 +113,6 @@ export default class PBVRenderer {
         console.log(k);
         for(let j=0; j<119; j++) {
           for(let i=0; i<119; i++) {
-            const v = this.getCoordsFromIndex(i, j, k);
-
             const s = [
               values[k*120*120 + j*120 + i],
               values[k*120*120 + j*120 + (i+1)],
@@ -125,13 +123,16 @@ export default class PBVRenderer {
               values[(k+1)*120*120 + (j+1)*120 + (i+1)],
               values[(k+1)*120*120 + (j+1)*120 + i],
             ];
+            if(s.reduce((a, b) => a+b, 0) === 0) continue;
+
+            const v = this.getCoordsFromIndex(i, j, k);
 
             const cube = new cubeCell(...v);
             cube.setVertexScalar(...s);
 
-            const rho = (_.sum(s) === 0) ? 0 : this.getNumberOfParticles(cube);
-
+            const rho = this.getNumberOfParticles(cube);
             _.times(rho, j => {
+              // const particlePosition = cube.metropolisSampling(rho);
               const particlePosition = cube.randomSampling();
               particleCoords.push(...cube.localToGlobal(particlePosition));
               particleValues.push(cube.interpolateScalar(particlePosition));
@@ -151,7 +152,7 @@ export default class PBVRenderer {
   }
 
   setVertexValues(values, rhos, idx) {
-    this.geometries[idx].addAttribute('valueData', new THREE.BufferAttribute(values, 1));
+    this.geometries[idx].addAttribute('value', new THREE.BufferAttribute(values, 1));
     this.geometries[idx].addAttribute('rho', new THREE.BufferAttribute(rhos, 1));
   }
 

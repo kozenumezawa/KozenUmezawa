@@ -8,7 +8,6 @@
       iframe#ray-casting(src="./w14/index.html", width="640", height="640")
   .row
     .column.column-30
-      p info
     .column.column-70.centering
       canvas#diff-image(width="640", height="640")
 </template>
@@ -52,9 +51,6 @@ body {
   background: whitesmoke;
   user-select: none;
   padding: 24px 0;
-}
-.centering {
-  text-align: center;
 }
 .container {
   margin: 20px auto;
