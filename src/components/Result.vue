@@ -3,8 +3,8 @@
 #result
 .row
   .column.column-50
-    | Number of cells: <b>{{ numberOfVertices }}</b><br>
-    | Frames per second: <b>{{ framesPerSecond }}</b>
+    | Number of cells: <b>{{ numberOfCells }}</b><br>
+    | Diffs: <b>{{ diffs }}</b>
   .column.column-50
     | Maximum value: <b>{{ maxValue }}</b><br>
     | Minimum value: <b>{{ minValue }}</b>
@@ -19,7 +19,6 @@ const pbvr = new PBVRenderer(640, 640);
 const rcBuffer = new Uint8Array(640 * 640 * 4);
 const pbvrBuffer = new Uint8Array(640 * 640 * 4);
 const diffBuffer = new Uint8Array(640 * 640 * 4);
-let diffAmount = 0;
 
 export default {
   ready () {
@@ -32,8 +31,8 @@ export default {
     return {
       minValue: '-',
       maxValue: '-',
-      framesPerSecond: 0,
-      numberOfVertices: 0,
+      diffs: 0,
+      numberOfCells: 0,
     };
   },
   methods: {
@@ -41,7 +40,7 @@ export default {
       axios.get('./assets/kvsml/lobstar_value.dat')
       .then(res => {
         const values = new Float32Array(res.data);
-        this.numberOfVertices = values.length;
+        this.numberOfCells = values.length;
         pbvr.generateParticlesFromCubes(values);
         pbvr.animate();
       })
@@ -62,7 +61,11 @@ export default {
       const pbvrCtx = pbvr.renderer.domElement.getContext('webgl', {preserveDrawingBuffer: true});
       pbvrCtx.readPixels(0, 0, 640, 640, pbvrCtx.RGBA, pbvrCtx.UNSIGNED_BYTE, pbvrBuffer);
 
+      let tmp = 0;
       for(let i=0; i<diffBuffer.length; i+=4) {
+        tmp += Math.sqrt(Math.pow(pbvrBuffer[i + 0] - rcBuffer[i + 0], 2) +
+                         Math.pow(pbvrBuffer[i + 1] - rcBuffer[i + 1], 2) +
+                         Math.pow(pbvrBuffer[i + 2] - rcBuffer[i + 2], 2));
         diffBuffer[i + 0] = Math.abs(pbvrBuffer[i + 0] - rcBuffer[i + 0]);
         diffBuffer[i + 1] = Math.abs(pbvrBuffer[i + 1] - rcBuffer[i + 1]);
         diffBuffer[i + 2] = Math.abs(pbvrBuffer[i + 2] - rcBuffer[i + 2]);
@@ -71,10 +74,7 @@ export default {
       const diffImageData = document.createElement('canvas').getContext('2d').createImageData(640, 640);
       diffImageData.data.set(diffBuffer);
       document.getElementById('diff-image').getContext('2d').putImageData(diffImageData, 0, 0);
-      const tmp = diffBuffer.reduce((a, b) => a + b) - 255 * 640 * 640;
-      if(diffAmount === tmp) return;
-      diffAmount = tmp;
-      console.log(`${tmp} diff: `);
+      this.diffs = _.round(tmp / (640*640), 2);
     }
   }
 };
