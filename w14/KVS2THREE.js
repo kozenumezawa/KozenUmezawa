@@ -24,9 +24,7 @@ KVS.THREEScreen.prototype = {
     const b = this.width / this.height;
     const e = 100 * f;
     this.scene = new THREE.Scene;
-    this.camera = new THREE.PerspectiveCamera(45, b, .1, e);
-    this.camera.position.set(d.x, d.y, 2 * f);
-    this.camera.up.set(0, 1, 0);
+    this.camera = new THREE.PerspectiveCamera();
     this.scene.add(this.camera);
     this.light = new THREE.DirectionalLight(new THREE.Color('white'));
     this.renderer = new THREE.WebGLRenderer;

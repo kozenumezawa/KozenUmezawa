@@ -14,7 +14,7 @@ const once = _.once(console.log);
 
 export default class PBVRenderer {
   constructor(width, height) {
-    const N = 30; // emsemble
+    const N = 10; // emsemble
     this.deltaT = 0.5;
     this.maxValue = null;
     this.minValue = null;
@@ -22,8 +22,8 @@ export default class PBVRenderer {
     this.renderer = new THREE.WebGLRenderer({preserveDrawingBuffer: true});
     this.renderer.setSize(width, height);
 
-    const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 11900);
-    camera.position.set(0, 0, -178.5);
+    const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 10000);
+    camera.position.set(60, 0, 180);
     window.camera = camera;
 
     this.geometries = _.range(N).map(i => new THREE.BufferGeometry());
@@ -34,6 +34,7 @@ export default class PBVRenderer {
 
     this.animate = this.animate.bind(this);
     this.controls = new OrbitControls(camera, this.renderer.domElement);
+    this.controls.target = new THREE.Vector3(60, 60, 0);
   }
 
   animate() {
@@ -79,10 +80,7 @@ export default class PBVRenderer {
     return stats.domElement.innerText.split(' ')[0];
   }
 
-  getCoordsFromIndex(i, j, k) {
-    const x = 58.8 - i;
-    const y = j - 59.7;
-    const z = -k;
+  getCoordsFromIndex(x, y, z) {
     return [
       [x + 1, y, z],
       [x, y, z],
@@ -99,7 +97,7 @@ export default class PBVRenderer {
     const alpha = _.sum(cell.scalar) / 255.0 / cell.scalar.length;
     let rho = -Math.PI * this.deltaT / Math.log(1 - alpha);
     if (Math.random() < (rho % 1)) rho++; // if rho is 0.9, particle will be shown by 90% probabillity
-    return Math.floor(rho);
+    return Math.floor(rho / 2);
   }
 
   generateParticlesFromCubes(values) {
@@ -110,7 +108,7 @@ export default class PBVRenderer {
       const particleValues = [];
       const rhos = [];
       for(let k=0; k<33; k++) {
-        console.log(k);
+        console.log(`${idx} scenes, ${k} layers.`);
         for(let j=0; j<119; j++) {
           for(let i=0; i<119; i++) {
             const s = [
@@ -141,6 +139,7 @@ export default class PBVRenderer {
           }
         }
       }
+      console.log(_.sum(rhos));
       this.setVertexCoords(Float32Array.from(particleCoords), idx);
       this.setVertexValues(Float32Array.from(particleValues), Float32Array.from(rhos), idx);
       scene.add(new THREE.Points(this.geometries[idx], this.materials[idx]));

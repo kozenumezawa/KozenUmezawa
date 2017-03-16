@@ -24,7 +24,7 @@ export default {
   ready () {
     this.$on('updateTransferFunction', () => pbvr.updateTransferFunction());
     document.getElementById('result').appendChild(pbvr.renderer.domElement);
-    setInterval(() => this.checkDiff(), 500);
+    setInterval(() => this.checkDiff(), 1000);
     this.retrieveLobstarData();
   },
   data () {
