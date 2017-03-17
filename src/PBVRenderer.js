@@ -112,14 +112,14 @@ export default class PBVRenderer {
         for(let j=0; j<119; j++) {
           for(let i=0; i<119; i++) {
             const s = [
-              values[k*120*120 + j*120 + i],
               values[k*120*120 + j*120 + (i+1)],
-              values[k*120*120 + (j+1)*120 + (i+1)],
+              values[k*120*120 + j*120 + i],
               values[k*120*120 + (j+1)*120 + i],
-              values[(k+1)*120*120 + j*120 + i],
+              values[k*120*120 + (j+1)*120 + (i+1)],
               values[(k+1)*120*120 + j*120 + (i+1)],
-              values[(k+1)*120*120 + (j+1)*120 + (i+1)],
+              values[(k+1)*120*120 + j*120 + i],
               values[(k+1)*120*120 + (j+1)*120 + i],
+              values[(k+1)*120*120 + (j+1)*120 + (i+1)],
             ];
             if(s.reduce((a, b) => a+b, 0) === 0) continue;
 
