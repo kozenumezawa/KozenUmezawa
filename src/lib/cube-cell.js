@@ -24,6 +24,10 @@ export default class cubeCell extends baseCell {
     this.scalar = [s0, s1, s2, s3, s4, s5, s6, s7]; //  scalar
   }
 
+  setVertexAlpha(a0, a1, a2, a3, a4, a5, a6, a7) {
+    this.alpha = [a0, a1, a2, a3, a4, a5, a6, a7]; //  scalar
+  }
+
   getInterpolationFunctions(local) {
     const p = local[0];
     const q = local[1];

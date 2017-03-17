@@ -2,6 +2,9 @@ const float PI = 3.14159265;
 
 attribute float value;
 attribute float rho;
+attribute float alphaZero;
+
+uniform float rZero;
 
 varying vec3 vColor;
 
@@ -22,8 +25,13 @@ vec3 getColor() {
 
 void main() {
   vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-  float r = getR();
   vColor.xyz = getColor();
-  gl_PointSize = 3000.0 * r / -mvPosition.z;
+
+  // old PRB
+  // gl_PointSize = 3000.0 * rZero * sqrt(log(1.0 - getAlpha()) / log(1.0 - alphaZero)) / -mvPosition.z;
+
+  // new PBR
+  gl_PointSize = 3000.0 * getR() / -mvPosition.z;
+
   gl_Position = projectionMatrix * mvPosition;
 }
