@@ -72,6 +72,6 @@ body {
   margin-right: 30px;
 }
 #diff-image {
-  transform: rotate(90deg);
+  transform: scaleY(-1);
 }
 </style>
